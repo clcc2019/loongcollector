@@ -13,11 +13,7 @@
 # limitations under the License.
 
 .DEFAULT_GOAL := all
-<<<<<<< HEAD
-VERSION ?= 0.0.1
-=======
 VERSION ?= 0.2.0
->>>>>>> 9876b546 (1)
 DOCKER_PUSH ?= false
 DOCKER_REPOSITORY ?= aliyun/loongcollector
 BUILD_REPOSITORY ?= aliyun/loongcollector_build
@@ -35,11 +31,7 @@ TEST_DEBUG ?= false
 TEST_PROFILE ?= false
 TEST_SCOPE ?= "all"
 
-<<<<<<< HEAD
-PLATFORMS := linux darwin windows
-=======
 PLATFORMS := linux
->>>>>>> 9876b546 (1)
 
 ifeq ($(shell uname -m),x86_64)
     ARCH := amd64
