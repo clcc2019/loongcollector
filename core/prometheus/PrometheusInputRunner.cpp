@@ -85,6 +85,7 @@ void PrometheusInputRunner::UpdateScrapeInput(std::shared_ptr<TargetSubscriberSc
 
     targetSubscriber->mUnRegisterMs = mUnRegisterMs.load();
     targetSubscriber->SetComponent(mTimer, &mEventPool);
+<<<<<<< HEAD
     auto currSystemTime = chrono::system_clock::now();
     auto randSleepMilliSec
         = GetRandSleepMilliSec(targetSubscriber->GetId(),
@@ -93,6 +94,12 @@ void PrometheusInputRunner::UpdateScrapeInput(std::shared_ptr<TargetSubscriberSc
     auto firstExecTime = chrono::steady_clock::now() + chrono::milliseconds(randSleepMilliSec);
     auto firstSubscribeTime = currSystemTime + chrono::milliseconds(randSleepMilliSec);
     targetSubscriber->SetFirstExecTime(firstExecTime, firstSubscribeTime);
+=======
+    auto randSleepMilliSec = GetRandSleepMilliSec(
+        targetSubscriber->GetId(), prometheus::RefeshIntervalSeconds, GetCurrentTimeInMilliSeconds());
+    auto firstExecTime = std::chrono::steady_clock::now() + std::chrono::milliseconds(randSleepMilliSec);
+    targetSubscriber->SetFirstExecTime(firstExecTime);
+>>>>>>> 9876b546 (1)
     // 1. add subscriber to mTargetSubscriberSchedulerMap
     {
         WriteLock lock(mSubscriberMapRWLock);

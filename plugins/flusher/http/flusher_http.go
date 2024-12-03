@@ -269,7 +269,21 @@ func (f *FlusherHTTP) initConverter() error {
 }
 
 func (f *FlusherHTTP) getConverter() (*converter.Converter, error) {
+<<<<<<< HEAD
 	return converter.NewConverterWithSep(f.Convert.Protocol, f.Convert.Encoding, f.Convert.Separator, f.Convert.IgnoreUnExpectedData, f.Convert.TagFieldsRename, f.Convert.ProtocolFieldsRename, f.context.GetPipelineScopeConfig())
+=======
+	return converter.NewConverterWithSep(
+		f.Convert.Protocol,
+		f.Convert.Encoding,
+		f.Convert.Separator,
+		f.Convert.IgnoreUnExpectedData,
+		f.Convert.ExternalKeyVal,
+		f.Convert.ExternalOverwritePolicy,
+		f.Convert.TagFieldsRename,
+		f.Convert.ProtocolFieldsRename,
+		f.context.GetPipelineScopeConfig(),
+	)
+>>>>>>> 9876b546 (1)
 }
 
 func (f *FlusherHTTP) initHTTPClient() error {

@@ -13,7 +13,11 @@
 # limitations under the License.
 
 FROM --platform=$TARGETPLATFORM centos:centos7.9.2009 as build
+<<<<<<< HEAD
 ARG VERSION=0.0.1
+=======
+ARG VERSION=0.2.0
+>>>>>>> 9876b546 (1)
 ARG TARGETPLATFORM
 WORKDIR /usr/local
 COPY dist/loongcollector-${VERSION}.linux-*.tar.gz .
@@ -25,6 +29,7 @@ MAINTAINER TomYu yyuuttaaoo@gmail.com
 
 ENV container docker
 
+<<<<<<< HEAD
 
 ARG TARGETPLATFORM
 
@@ -39,11 +44,18 @@ RUN if [ "$TARGETPLATFORM" = "linux/amd64" ]; then \
         exit 1; \
     fi
 
+=======
+RUN curl -L -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+>>>>>>> 9876b546 (1)
 
 RUN yum update -y && yum upgrade -y && yum -y clean all && rm -fr /var/cache && rm -rf /core.*
 
 ARG HOST_OS=Linux
+<<<<<<< HEAD
 ARG VERSION=0.0.1
+=======
+ARG VERSION=0.2.0
+>>>>>>> 9876b546 (1)
 ARG TARGETPLATFORM
 
 COPY --from=build /usr/local/loongcollector-${VERSION} /usr/local/loongcollector

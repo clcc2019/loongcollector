@@ -114,7 +114,11 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/plugin/flusher/links.cmake)
 
 # Subdirectories (modules). except for common, input, processor, flusher, observer, helper, spl, and provider.
 set(SUB_DIRECTORIES_LIST
+<<<<<<< HEAD
         application app_config checkpoint container_manager metadata logger go_pipeline monitor monitor/metric_constants monitor/metric_models monitor/profile_sender models
+=======
+        application app_config checkpoint container_manager metadata logger go_pipeline monitor monitor/metric_constants monitor/profile_sender models
+>>>>>>> 9876b546 (1)
         config config/watcher constants
         pipeline pipeline/batch pipeline/limiter pipeline/plugin pipeline/plugin/creator pipeline/plugin/instance pipeline/plugin/interface pipeline/queue pipeline/route pipeline/serializer
         task_pipeline

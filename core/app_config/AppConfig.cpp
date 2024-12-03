@@ -430,6 +430,25 @@ string GetAgentLogName() {
     }
 }
 
+<<<<<<< HEAD
+=======
+string GetAgentSnapshotDir() {
+    if (BOOL_FLAG(logtail_mode)) {
+        return GetProcessExecutionDir() + STRING_FLAG(logtail_snapshot_dir);
+    } else {
+        return GetAgentLogDir() + "snapshot";
+    }
+}
+
+string GetAgentStatusLogName() {
+    if (BOOL_FLAG(logtail_mode)) {
+        return "ilogtail_status.LOG";
+    } else {
+        return "loongcollector_status.LOG";
+    }
+}
+
+>>>>>>> 9876b546 (1)
 string GetObserverEbpfHostPath() {
     if (BOOL_FLAG(logtail_mode)) {
         return STRING_FLAG(sls_observer_ebpf_host_path);
@@ -893,6 +912,10 @@ void AppConfig::LoadResourceConf(const Json::Value& confJson) {
         mSendRequestConcurrency = confJson["send_request_concurrency"].asInt();
     else
         mSendRequestConcurrency = INT32_FLAG(send_request_concurrency);
+<<<<<<< HEAD
+=======
+    LogtailMonitor::GetInstance()->UpdateConstMetric("send_request_concurrency", mSendRequestConcurrency);
+>>>>>>> 9876b546 (1)
 
     if (confJson.isMember("process_thread_count") && confJson["process_thread_count"].isInt())
         mProcessThreadCount = confJson["process_thread_count"].asInt();

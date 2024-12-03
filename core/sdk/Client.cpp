@@ -19,21 +19,89 @@
 #include "Exception.h"
 #include "Result.h"
 #include "logger/Logger.h"
+<<<<<<< HEAD
 #include "plugin/flusher/sls/SLSClientManager.h"
 #include "app_config/AppConfig.h"
 #include "monitor/Monitor.h"
+=======
+>>>>>>> 9876b546 (1)
 
 namespace logtail {
 namespace sdk {
 
     using namespace std;
 
+<<<<<<< HEAD
     Client::Client(const string& aliuid, const string& slsHost, int32_t timeout)
         : mTimeout(timeout), mHostFieldSuffix(""), mIsHostRawIp(false), mPort(80), mUsingHTTPS(false), mAliuid(aliuid) {
         mClient = new CurlClient();
         mSlsHostUpdateTime = 0;
         mSlsRealIpUpdateTime = 0;
         SetSlsHost(slsHost);
+=======
+#define LOG_SDK_IDENTIFICATION "ali-log-logtail"
+
+
+    static string GetHostIp(const std::string& intf) {
+        // @todo
+        return "127.0.0.1";
+    }
+
+    Client::Client(const string& slsHost,
+                   const string& accessKeyId,
+                   const string& accessKey,
+                   int32_t timeout,
+                   const string& source,
+                   const string& intf)
+        : mAccessKeyId(accessKeyId),
+          mAccessKey(accessKey),
+          mSource(source),
+          mTimeout(timeout),
+          mUserAgent(LOG_SDK_IDENTIFICATION),
+          mKeyProvider(""),
+          mHostFieldSuffix(""),
+          mIsHostRawIp(false),
+          mPort(80),
+          mUsingHTTPS(false) {
+        mClient = new CurlClient();
+        mInterface = intf;
+        mSlsHostUpdateTime = 0;
+        mSlsRealIpUpdateTime = 0;
+        SetSlsHost(slsHost);
+        if (mSource.empty()) {
+            mSource = GetHostIp(mInterface);
+        }
+        if (mTimeout <= 0) {
+            mTimeout = LOG_REQUEST_TIMEOUT;
+        }
+    }
+    Client::Client(const string& slsHost,
+                   const string& accessKeyId,
+                   const string& accessKey,
+                   const std::string& securityToken,
+                   int32_t timeout,
+                   const string& source,
+                   const string& intf)
+        : mAccessKeyId(accessKeyId),
+          mAccessKey(accessKey),
+          mSecurityToken(securityToken),
+          mSource(source),
+          mTimeout(timeout),
+          mUserAgent(LOG_SDK_IDENTIFICATION),
+          mKeyProvider(""),
+          mHostFieldSuffix(""),
+          mIsHostRawIp(false),
+          mPort(80),
+          mUsingHTTPS(false) {
+        mClient = new CurlClient();
+        mInterface = intf;
+        mSlsHostUpdateTime = 0;
+        mSlsRealIpUpdateTime = 0;
+        SetSlsHost(slsHost);
+        if (mSource.empty()) {
+            mSource = GetHostIp(mInterface);
+        }
+>>>>>>> 9876b546 (1)
         if (mTimeout <= 0) {
             mTimeout = LOG_REQUEST_TIMEOUT;
         }
@@ -50,6 +118,36 @@ namespace sdk {
         mUsingHTTPS = (443 == mPort);
     }
 
+<<<<<<< HEAD
+=======
+
+    void Client::SetAccessKey(const string& accessKey) {
+        mSpinLock.lock();
+        mAccessKey = accessKey;
+        mSpinLock.unlock();
+    }
+
+    string Client::GetAccessKey() {
+        mSpinLock.lock();
+        string accessKey = mAccessKey;
+        mSpinLock.unlock();
+        return accessKey;
+    }
+
+    void Client::SetAccessKeyId(const string& accessKeyId) {
+        mSpinLock.lock();
+        mAccessKeyId = accessKeyId;
+        mSpinLock.unlock();
+    }
+
+    string Client::GetAccessKeyId() {
+        mSpinLock.lock();
+        string accessKeyId = mAccessKeyId;
+        mSpinLock.unlock();
+        return accessKeyId;
+    }
+
+>>>>>>> 9876b546 (1)
     string Client::GetSlsHost() {
         mSpinLock.lock();
         string slsHost = mSlsHost;
@@ -144,6 +242,12 @@ namespace sdk {
                                                       bool isTimeSeries) {
         map<string, string> httpHeader;
         httpHeader[CONTENT_TYPE] = TYPE_LOG_PROTOBUF;
+<<<<<<< HEAD
+=======
+        if (!mKeyProvider.empty()) {
+            httpHeader[X_LOG_KEYPROVIDER] = mKeyProvider;
+        }
+>>>>>>> 9876b546 (1)
         httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(rawSize);
         httpHeader[X_LOG_COMPRESSTYPE] = Client::GetCompressTypeString(compressType);
         if (isTimeSeries) {
@@ -160,6 +264,12 @@ namespace sdk {
                                                                 const std::string& hashKey) {
         map<string, string> httpHeader;
         httpHeader[CONTENT_TYPE] = TYPE_LOG_PROTOBUF;
+<<<<<<< HEAD
+=======
+        if (!mKeyProvider.empty()) {
+            httpHeader[X_LOG_KEYPROVIDER] = mKeyProvider;
+        }
+>>>>>>> 9876b546 (1)
         httpHeader[X_LOG_MODE] = LOG_MODE_BATCH_GROUP;
         httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(packageListData.size());
         httpHeader[X_LOG_COMPRESSTYPE] = Client::GetCompressTypeString(compressType);
@@ -177,10 +287,21 @@ namespace sdk {
                                                                       bool isTimeSeries) {
         map<string, string> httpHeader;
         httpHeader[CONTENT_TYPE] = TYPE_LOG_PROTOBUF;
+<<<<<<< HEAD
         httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(rawSize);
         httpHeader[X_LOG_COMPRESSTYPE] = Client::GetCompressTypeString(compressType);
         if (isTimeSeries) {
             return CreateAsynPostMetricStoreLogsRequest(project, logstore, compressedLogGroup, httpHeader, item);
+=======
+        if (!mKeyProvider.empty()) {
+            httpHeader[X_LOG_KEYPROVIDER] = mKeyProvider;
+        }
+        httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(rawSize);
+        httpHeader[X_LOG_COMPRESSTYPE] = Client::GetCompressTypeString(compressType);
+        if (isTimeSeries) {
+            return CreateAsynPostMetricStoreLogsRequest(
+                project, logstore, compressedLogGroup, httpHeader,item);
+>>>>>>> 9876b546 (1)
         } else {
             return CreateAsynPostLogStoreLogsRequest(
                 project, logstore, compressedLogGroup, httpHeader, hashKey, hashKeySeqID, item);
@@ -196,6 +317,12 @@ namespace sdk {
                                                                                 const std::string& hashKey) {
         map<string, string> httpHeader;
         httpHeader[CONTENT_TYPE] = TYPE_LOG_PROTOBUF;
+<<<<<<< HEAD
+=======
+        if (!mKeyProvider.empty()) {
+            httpHeader[X_LOG_KEYPROVIDER] = mKeyProvider;
+        }
+>>>>>>> 9876b546 (1)
         httpHeader[X_LOG_MODE] = LOG_MODE_BATCH_GROUP;
         httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(packageListData.size());
         httpHeader[X_LOG_COMPRESSTYPE] = Client::GetCompressTypeString(compressType);
@@ -211,6 +338,7 @@ namespace sdk {
                              std::map<std::string, std::string>& header,
                              HttpMessage& httpMessage,
                              std::string* realIpPtr) {
+<<<<<<< HEAD
         SLSClientManager::AuthType type;
         string accessKeyId, accessKeySecret;
         if (!SLSClientManager::GetInstance()->GetAccessKey(mAliuid, type, accessKeyId, accessKeySecret)) {
@@ -224,6 +352,12 @@ namespace sdk {
         SetCommonHeader(header, (int32_t)(body.length()), project);
         string signature = GetUrlSignature(httpMethod, url, header, parameterList, body, accessKeySecret);
         header[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + accessKeyId + ':' + signature;
+=======
+        string host = GetHost(project);
+        SetCommonHeader(header, (int32_t)(body.length()), project);
+        string signature = GetUrlSignature(httpMethod, url, header, parameterList, body, GetAccessKey());
+        header[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + GetAccessKeyId() + ':' + signature;
+>>>>>>> 9876b546 (1)
 
         string queryString;
         GetQueryString(parameterList, queryString);
@@ -233,7 +367,11 @@ namespace sdk {
             port = 443;
         }
         mClient->Send(
+<<<<<<< HEAD
             httpMethod, host, port, url, queryString, header, body, mTimeout, httpMessage, AppConfig::GetInstance()->GetBindInterface(), mUsingHTTPS);
+=======
+            httpMethod, host, port, url, queryString, header, body, mTimeout, httpMessage, mInterface, mUsingHTTPS);
+>>>>>>> 9876b546 (1)
 
         if (httpMessage.statusCode != 200) {
             if (realIpPtr != NULL) {
@@ -249,6 +387,7 @@ namespace sdk {
                                                  const std::string& body,
                                                  std::map<std::string, std::string>& httpHeader,
                                                  SenderQueueItem* item) {
+<<<<<<< HEAD
         SLSClientManager::AuthType type;
         string accessKeyId, accessKeySecret;
         if (!SLSClientManager::GetInstance()->GetAccessKey(mAliuid, type, accessKeyId, accessKeySecret)) {
@@ -258,17 +397,26 @@ namespace sdk {
             httpHeader[X_LOG_KEYPROVIDER] = MD5_SHA1_SALT_KEYPROVIDER;
         }
 
+=======
+>>>>>>> 9876b546 (1)
         string operation = METRICSTORES;
         operation.append("/").append(project).append("/").append(logstore).append("/api/v1/write");
         httpHeader[CONTENT_MD5] = CalcMD5(body);
         map<string, string> parameterList;
         string host = GetSlsHost();
         SetCommonHeader(httpHeader, (int32_t)(body.length()), "");
+<<<<<<< HEAD
         string signature = GetUrlSignature(HTTP_POST, operation, httpHeader, parameterList, body, accessKeySecret);
         httpHeader[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + accessKeyId + ':' + signature;
         return make_unique<HttpSinkRequest>(HTTP_POST, mUsingHTTPS, host, mPort, operation, "", httpHeader, body, item);
     }
 
+=======
+        string signature = GetUrlSignature(HTTP_POST, operation, httpHeader, parameterList, body, GetAccessKey());
+        httpHeader[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + GetAccessKeyId() + ':' + signature;
+        return make_unique<HttpSinkRequest>(HTTP_POST, mUsingHTTPS, host, mPort, operation, "", httpHeader, body, item);
+    }
+>>>>>>> 9876b546 (1)
     unique_ptr<HttpSinkRequest>
     Client::CreateAsynPostLogStoreLogsRequest(const std::string& project,
                                               const std::string& logstore,
@@ -277,6 +425,7 @@ namespace sdk {
                                               const std::string& hashKey,
                                               int64_t hashKeySeqID,
                                               SenderQueueItem* item) {
+<<<<<<< HEAD
         SLSClientManager::AuthType type;
         string accessKeyId, accessKeySecret;
         if (!SLSClientManager::GetInstance()->GetAccessKey(mAliuid, type, accessKeyId, accessKeySecret)) {
@@ -286,6 +435,8 @@ namespace sdk {
             httpHeader[X_LOG_KEYPROVIDER] = MD5_SHA1_SALT_KEYPROVIDER;
         }
 
+=======
+>>>>>>> 9876b546 (1)
         string operation = LOGSTORES;
         operation.append("/").append(logstore);
         if (hashKey.empty())
@@ -305,8 +456,13 @@ namespace sdk {
 
         string host = GetHost(project);
         SetCommonHeader(httpHeader, (int32_t)(body.length()), project);
+<<<<<<< HEAD
         string signature = GetUrlSignature(HTTP_POST, operation, httpHeader, parameterList, body, accessKeySecret);
         httpHeader[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + accessKeyId + ':' + signature;
+=======
+        string signature = GetUrlSignature(HTTP_POST, operation, httpHeader, parameterList, body, GetAccessKey());
+        httpHeader[AUTHORIZATION] = LOG_HEADSIGNATURE_PREFIX + GetAccessKeyId() + ':' + signature;
+>>>>>>> 9876b546 (1)
 
         string queryString;
         GetQueryString(parameterList, queryString);
@@ -318,11 +474,21 @@ namespace sdk {
     PostLogStoreLogsResponse
     Client::PingSLSServer(const std::string& project, const std::string& logstore, std::string* realIpPtr) {
         sls_logs::LogGroup logGroup;
+<<<<<<< HEAD
         logGroup.set_source(LoongCollectorMonitor::mIpAddr);
+=======
+        logGroup.set_source(mSource);
+>>>>>>> 9876b546 (1)
         auto serializeData = logGroup.SerializeAsString();
 
         std::map<string, string> httpHeader;
         httpHeader[CONTENT_TYPE] = TYPE_LOG_PROTOBUF;
+<<<<<<< HEAD
+=======
+        if (!mKeyProvider.empty()) {
+            httpHeader[X_LOG_KEYPROVIDER] = mKeyProvider;
+        }
+>>>>>>> 9876b546 (1)
         httpHeader[X_LOG_BODYRAWSIZE] = std::to_string(serializeData.size());
         return SynPostLogStoreLogs(project, logstore, serializeData, httpHeader, "", realIpPtr);
     }
@@ -403,7 +569,11 @@ namespace sdk {
                       compressedLog,
                       mTimeout,
                       httpResponse,
+<<<<<<< HEAD
                       AppConfig::GetInstance()->GetBindInterface(),
+=======
+                      mInterface,
+>>>>>>> 9876b546 (1)
                       mUsingHTTPS);
 
         PostLogStoreLogsResponse ret;
@@ -420,11 +590,21 @@ namespace sdk {
             httpHeader[HOST] = GetSlsHost();
         }
 
+<<<<<<< HEAD
         httpHeader[USER_AGENT] = SLSClientManager::GetInstance()->GetUserAgent();
+=======
+        httpHeader[USER_AGENT] = mUserAgent;
+>>>>>>> 9876b546 (1)
         httpHeader[X_LOG_APIVERSION] = LOG_API_VERSION;
         httpHeader[X_LOG_SIGNATUREMETHOD] = HMAC_SHA1;
         httpHeader[DATE] = GetDateString();
         httpHeader[CONTENT_LENGTH] = std::to_string(contentLength);
+<<<<<<< HEAD
+=======
+        if (!mSecurityToken.empty()) {
+            httpHeader[X_ACS_SECURITY_TOKEN] = mSecurityToken;
+        }
+>>>>>>> 9876b546 (1)
     }
 
     std::string Client::GetCompressTypeString(sls_logs::SlsCompressType compressType) {

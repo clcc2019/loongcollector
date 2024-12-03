@@ -32,6 +32,10 @@
 #include "protobuf/sls/sls_logs.pb.h"
 #include "provider/Provider.h"
 #include "sdk/Exception.h"
+<<<<<<< HEAD
+=======
+#include "sls_control/SLSControl.h"
+>>>>>>> 9876b546 (1)
 
 DEFINE_FLAG_INT32(write_secondary_wait_timeout, "interval of dump seconary buffer from memory to file, seconds", 2);
 DEFINE_FLAG_INT32(buffer_file_alive_interval, "the max alive time of a bufferfile, 5 minutes", 300);
@@ -40,9 +44,12 @@ DEFINE_FLAG_INT32(quota_exceed_wait_interval, "when daemon buffer thread get quo
 DEFINE_FLAG_INT32(secondary_buffer_count_limit, "data ready for write buffer file", 20);
 DEFINE_FLAG_INT32(send_retry_sleep_interval, "sleep microseconds when sync send fail, 50ms", 50000);
 DEFINE_FLAG_INT32(buffer_check_period, "check logtail local storage buffer period", 60);
+<<<<<<< HEAD
 DEFINE_FLAG_INT32(unauthorized_wait_interval, "", 1);
 
 DECLARE_FLAG_INT32(discard_send_fail_interval);
+=======
+>>>>>>> 9876b546 (1)
 
 using namespace std;
 
@@ -484,7 +491,11 @@ void DiskBufferWriter::SendEncryptionBuffer(const std::string& filename, int32_t
                     SendResult res = SendBufferFileData(bufferMeta, logData, errorCode);
                     if (res == SEND_OK)
                         sendResult = true;
+<<<<<<< HEAD
                     else if (res == SEND_DISCARD_ERROR || res == SEND_PARAMETER_INVALID) {
+=======
+                    else if (res == SEND_DISCARD_ERROR || res == SEND_UNAUTHORIZED) {
+>>>>>>> 9876b546 (1)
                         AlarmManager::GetInstance()->SendAlarm(SEND_DATA_FAIL_ALARM,
                                                                string("send buffer file fail, rawsize:")
                                                                    + ToString(bufferMeta.rawsize())
@@ -494,7 +505,12 @@ void DiskBufferWriter::SendEncryptionBuffer(const std::string& filename, int32_t
                                                                "");
                         sendResult = true;
                         discardCount++;
+<<<<<<< HEAD
                     }
+=======
+                    } else if (res == SEND_QUOTA_EXCEED && INT32_FLAG(quota_exceed_wait_interval) > 0)
+                        sleep(INT32_FLAG(quota_exceed_wait_interval));
+>>>>>>> 9876b546 (1)
                 }
             }
             delete[] des;
@@ -716,19 +732,40 @@ SendResult DiskBufferWriter::SendBufferFileData(const sls_logs::LogtailBufferMet
     if (endpoint.empty())
         sendRes = SEND_NETWORK_ERROR;
     else {
+<<<<<<< HEAD
         sendRes = SendToNetSync(sendClient, region, endpoint, bufferMeta, logData, errorCode);
+=======
+        sendRes = SendToNetSync(sendClient, bufferMeta, logData, errorCode);
+    }
+    if (sendRes == SEND_NETWORK_ERROR) {
+        SLSClientManager::GetInstance()->UpdateEndpointStatus(region, endpoint, false);
+        SLSClientManager::GetInstance()->ResetClientEndpoint(bufferMeta.aliuid(), region, time(NULL));
+        LOG_DEBUG(sLogger,
+                  ("SendBufferFileData",
+                   "SEND_NETWORK_ERROR")("region", region)("aliuid", bufferMeta.aliuid())("endpoint", endpoint));
+    } else if (sendRes == SEND_UNAUTHORIZED) {
+        int32_t lastUpdateTime;
+        if (SLSControl::GetInstance()->SetSlsSendClientAuth(bufferMeta.aliuid(), false, sendClient, lastUpdateTime))
+            sendRes = SendToNetSync(sendClient, bufferMeta, logData, errorCode);
+>>>>>>> 9876b546 (1)
     }
     return sendRes;
 }
 
 SendResult DiskBufferWriter::SendToNetSync(sdk::Client* sendClient,
+<<<<<<< HEAD
                                            const std::string& region,
                                            const std::string& endpoint,
+=======
+>>>>>>> 9876b546 (1)
                                            const sls_logs::LogtailBufferMeta& bufferMeta,
                                            const std::string& logData,
                                            std::string& errorCode) {
     int32_t retryTimes = 0;
+<<<<<<< HEAD
     time_t beginTime = time(NULL);
+=======
+>>>>>>> 9876b546 (1)
     while (true) {
         ++retryTimes;
         try {
@@ -768,6 +805,7 @@ SendResult DiskBufferWriter::SendToNetSync(sdk::Client* sendClient,
         } catch (sdk::LOGException& ex) {
             errorCode = ex.GetErrorCode();
             SendResult sendRes = ConvertErrorCode(errorCode);
+<<<<<<< HEAD
             bool hasAuthError = false;
             switch (sendRes) {
                 case SEND_NETWORK_ERROR:
@@ -782,12 +820,18 @@ SendResult DiskBufferWriter::SendToNetSync(sdk::Client* sendClient,
                     usleep(INT32_FLAG(send_retry_sleep_interval));
                     break;
                 case SEND_QUOTA_EXCEED:
+=======
+            if (sendRes == SEND_DISCARD_ERROR || sendRes == SEND_UNAUTHORIZED || sendRes == SEND_QUOTA_EXCEED
+                || retryTimes >= INT32_FLAG(send_retrytimes)) {
+                if (sendRes == SEND_QUOTA_EXCEED)
+>>>>>>> 9876b546 (1)
                     AlarmManager::GetInstance()->SendAlarm(SEND_QUOTA_EXCEED_ALARM,
                                                            "error_code: " + errorCode
                                                                + ", error_message: " + ex.GetMessage(),
                                                            bufferMeta.project(),
                                                            bufferMeta.logstore(),
                                                            "");
+<<<<<<< HEAD
                     // no region
                     if (!GetProfileSender()->IsProfileData("", bufferMeta.project(), bufferMeta.logstore()))
                         LOG_WARNING(sLogger,
@@ -817,6 +861,23 @@ SendResult DiskBufferWriter::SendToNetSync(sdk::Client* sendClient,
                 if (!mIsSendBufferThreadRunning) {
                     return sendRes;
                 }
+=======
+                // no region
+                if (!GetProfileSender()->IsProfileData("", bufferMeta.project(), bufferMeta.logstore()))
+                    LOG_ERROR(sLogger,
+                              ("send data to SLS fail, error_code", errorCode)("error_message", ex.GetMessage())(
+                                  "endpoint", sendClient->GetRawSlsHost())("projectName", bufferMeta.project())(
+                                  "logstore", bufferMeta.logstore())("RetryTimes", retryTimes)("rawsize",
+                                                                                               bufferMeta.rawsize()));
+                return sendRes;
+            } else {
+                LOG_DEBUG(
+                    sLogger,
+                    ("send data to SLS fail", "retry later")("error_code", errorCode)("error_message", ex.GetMessage())(
+                        "endpoint", sendClient->GetRawSlsHost())("projectName", bufferMeta.project())(
+                        "logstore", bufferMeta.logstore())("RetryTimes", retryTimes)("rawsize", bufferMeta.rawsize()));
+                usleep(INT32_FLAG(send_retry_sleep_interval));
+>>>>>>> 9876b546 (1)
             }
         } catch (...) {
             if (retryTimes >= INT32_FLAG(send_retrytimes)) {

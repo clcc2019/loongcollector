@@ -76,6 +76,7 @@ jobs:
           WITHOUTGDB: ON
           MAKE_JOBS: 16
           WITHSPL: ON
+<<<<<<< HEAD
           BUILD_TYPE: Debug
         run: CURRENT_DIR=$(pwd) && sed -i "s|/src|$CURRENT_DIR|g" docker/Dockerfile_build && make core PATH_IN_DOCKER=$(pwd)
 
@@ -87,6 +88,16 @@ jobs:
 
       - name: Unit Test Coverage
         run: docker run -v $(pwd):$(pwd) unittest_coverage bash -c "cd $(pwd)/core && gcovr --gcov-ignore-errors=no_working_dir_found --root . --json coverage.json --json-summary-pretty --json-summary summary.json -e \".*\.pb\.cc\" -e \".*\.pb\.h\" -e \".*unittest.*\" -e \".*sdk.*\" -e \".*logger.*\" -e \".*config_server.*\" -e \".*go_pipeline.*\" -e \".*application.*\" -e \".*runner.*\""
+=======
+          # BUILD_TYPE: Debug # TODO: Uncomment when memory management is refined
+        run: CURRENT_DIR=$(pwd) && sed -i "s|/src|$CURRENT_DIR|g" docker/Dockerfile_build && make core PATH_IN_DOCKER=$(pwd)
+
+      - name: Unit Test
+        run: make unittest_core
+
+      - name: Unit Test Coverage
+        run: docker build -t unittest_coverage -f ./docker/Dockerfile_coverage . && docker run -v $(pwd):$(pwd) unittest_coverage bash -c "cd $(pwd)/core && gcovr --gcov-ignore-errors=no_working_dir_found --root . --json coverage.json --json-summary-pretty --json-summary summary.json -e \".*\.pb\.cc\" -e \".*\.pb\.h\" -e \".*unittest.*\" -e \".*sdk.*\" -e \".*logger.*\" -e \".*config_server.*\" -e \".*go_pipeline.*\" -e \".*application.*\" -e \".*runner.*\""
+>>>>>>> 9876b546 (1)
 
       - name: Setup Python3.10
         uses: actions/setup-python@v5

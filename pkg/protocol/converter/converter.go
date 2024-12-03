@@ -121,6 +121,7 @@ var supportedEncodingMap = map[string]map[string]bool{
 }
 
 type Converter struct {
+<<<<<<< HEAD
 	Protocol             string
 	Encoding             string
 	Separator            string
@@ -132,12 +133,32 @@ type Converter struct {
 }
 
 func NewConverterWithSep(protocol, encoding, sep string, ignoreUnExpectedData bool, tagKeyRenameMap, protocolKeyRenameMap map[string]string, globalConfig *config.GlobalConfig) (*Converter, error) {
+=======
+	Protocol                string
+	Encoding                string
+	Separator               string
+	IgnoreUnExpectedData    bool
+	OnlyContents            bool
+	TagKeyRenameMap         map[string]string
+	ProtocolKeyRenameMap    map[string]string
+	ExternalKeyVal          map[string]interface{}
+	ExternalOverwritePolicy int
+	GlobalConfig            *config.GlobalConfig
+}
+
+func NewConverterWithSep(protocol, encoding, sep string, ignoreUnExpectedData bool, externalKeyVal map[string]interface{}, externalOverwritePolicy int, tagKeyRenameMap, protocolKeyRenameMap map[string]string, globalConfig *config.GlobalConfig) (*Converter, error) {
+>>>>>>> 9876b546 (1)
 	converter, err := NewConverter(protocol, encoding, tagKeyRenameMap, protocolKeyRenameMap, globalConfig)
 	if err != nil {
 		return nil, err
 	}
 	converter.Separator = sep
 	converter.IgnoreUnExpectedData = ignoreUnExpectedData
+<<<<<<< HEAD
+=======
+	converter.ExternalKeyVal = externalKeyVal
+	converter.ExternalOverwritePolicy = externalOverwritePolicy
+>>>>>>> 9876b546 (1)
 	return converter, nil
 }
 

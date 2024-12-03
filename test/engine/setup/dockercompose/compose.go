@@ -56,7 +56,11 @@ services:
       interval: 1s
       retries: 10
   loongcollectorC:
+<<<<<<< HEAD
     image: aliyun/loongcollector:0.0.1
+=======
+    image: aliyun/loongcollector:0.2.0
+>>>>>>> 9876b546 (1)
     hostname: loongcollector
     privileged: true
     pid: host

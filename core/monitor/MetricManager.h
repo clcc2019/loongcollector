@@ -22,16 +22,68 @@
 #include <unordered_map>
 #include <vector>
 
+<<<<<<< HEAD
 #include "common/Lock.h"
 #include "models/PipelineEventGroup.h"
 #include "monitor/metric_constants/MetricConstants.h"
 #include "monitor/metric_models/MetricRecord.h"
 #include "monitor/metric_models/SelfMonitorMetricEvent.h"
+=======
+#include "MetricRecord.h"
+#include "common/Lock.h"
+#include "models/PipelineEventGroup.h"
+#include "protobuf/sls/sls_logs.pb.h"
+>>>>>>> 9876b546 (1)
 
 namespace logtail {
 
 extern const std::string METRIC_TOPIC_TYPE;
 
+<<<<<<< HEAD
+=======
+struct SelfMonitorMetricRule {
+    bool mEnable;
+    size_t mInterval;
+};
+
+struct SelfMonitorMetricRules {
+    SelfMonitorMetricRule mAgentMetricsRule;
+    SelfMonitorMetricRule mRunnerMetricsRule;
+    SelfMonitorMetricRule mPipelineMetricsRule;
+    SelfMonitorMetricRule mPluginSourceMetricsRule;
+    SelfMonitorMetricRule mPluginMetricsRule;
+    SelfMonitorMetricRule mComponentMetricsRule;
+};
+
+using SelfMonitorMetricEventKey = int64_t;
+class SelfMonitorMetricEvent {
+public:
+    SelfMonitorMetricEvent();
+    SelfMonitorMetricEvent(MetricsRecord* metricRecord);
+    SelfMonitorMetricEvent(const std::map<std::string, std::string>& metricRecord);
+
+    void SetInterval(size_t interval);
+    void Merge(SelfMonitorMetricEvent& event);
+
+    bool ShouldSend();
+    bool ShouldDelete();
+    void ReadAsMetricEvent(MetricEvent* metricEventPtr);
+
+    SelfMonitorMetricEventKey mKey; // labels + category
+    std::string mCategory; // category
+private:
+    void CreateKey();
+
+    std::unordered_map<std::string, std::string> mLabels;
+    std::unordered_map<std::string, uint64_t> mCounters;
+    std::unordered_map<std::string, double> mGauges;
+    int32_t mSendInterval;
+    int32_t mLastSendInterval;
+    bool mUpdatedFlag;
+};
+using SelfMonitorMetricEventMap = std::unordered_map<SelfMonitorMetricEventKey, SelfMonitorMetricEvent>;
+
+>>>>>>> 9876b546 (1)
 class WriteMetrics {
 private:
     WriteMetrics() = default;

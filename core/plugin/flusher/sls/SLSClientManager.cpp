@@ -14,18 +14,22 @@
 
 #include "plugin/flusher/sls/SLSClientManager.h"
 
+<<<<<<< HEAD
 #ifdef __linux__
 #include <sys/utsname.h>
 #endif
 
 #include <curl/curl.h>
 
+=======
+>>>>>>> 9876b546 (1)
 #include "app_config/AppConfig.h"
 #include "common/EndpointUtil.h"
 #include "common/Flags.h"
 #include "common/LogtailCommonFlags.h"
 #include "common/StringTools.h"
 #include "common/TimeUtil.h"
+<<<<<<< HEAD
 #include "common/version.h"
 #include "logger/Logger.h"
 #include "monitor/Monitor.h"
@@ -40,6 +44,14 @@
 #ifdef SetPort
 #undef SetPort
 #endif
+=======
+#include "logger/Logger.h"
+#include "monitor/Monitor.h"
+#include "plugin/flusher/sls/FlusherSLS.h"
+#include "plugin/flusher/sls/SendResult.h"
+#include "sdk/Exception.h"
+#include "sls_control/SLSControl.h"
+>>>>>>> 9876b546 (1)
 
 DEFINE_FLAG_STRING(data_endpoint_policy,
                    "policy for switching between data server endpoints, possible options include "
@@ -51,9 +63,15 @@ DEFINE_FLAG_INT32(test_network_normal_interval, "if last check is normal, test n
 DEFINE_FLAG_INT32(test_unavailable_endpoint_interval, "test unavailable endpoint interval", 60);
 DEFINE_FLAG_INT32(send_switch_real_ip_interval, "seconds", 60);
 DEFINE_FLAG_BOOL(send_prefer_real_ip, "use real ip to send data", false);
+<<<<<<< HEAD
 DEFINE_FLAG_STRING(default_access_key_id, "", "");
 DEFINE_FLAG_STRING(default_access_key, "", "");
 DEFINE_FLAG_STRING(custom_user_agent, "custom user agent appended at the end of the exsiting ones", "");
+=======
+
+DECLARE_FLAG_STRING(default_access_key_id);
+DECLARE_FLAG_STRING(default_access_key);
+>>>>>>> 9876b546 (1)
 
 using namespace std;
 
@@ -129,6 +147,7 @@ std::string SLSClientManager::RegionEndpointsInfo::GetAvailableEndpointWithTopPr
     return mDefaultEndpoint;
 }
 
+<<<<<<< HEAD
 SLSClientManager* SLSClientManager::GetInstance() {
 #ifdef __ENTERPRISE__
     static auto ptr = unique_ptr<SLSClientManager>(new EnterpriseSLSClientManager());
@@ -146,13 +165,34 @@ void SLSClientManager::Init() {
                                                   "",
                                                   INT32_FLAG(sls_client_send_timeout)));
         mProbeNetworkClient->SetPort(AppConfig::GetInstance()->GetDataServerPort());
+=======
+void SLSClientManager::Init() {
+    InitEndpointSwitchPolicy();
+    if (mDataServerSwitchPolicy == EndpointSwitchPolicy::DESIGNATED_FIRST) {
+        mProbeNetworkClient.reset(new sdk::Client("",
+                                                  STRING_FLAG(default_access_key_id),
+                                                  STRING_FLAG(default_access_key),
+                                                  INT32_FLAG(sls_client_send_timeout),
+                                                  LoongCollectorMonitor::mIpAddr,
+                                                  AppConfig::GetInstance()->GetBindInterface()));
+        SLSControl::GetInstance()->SetSlsSendClientCommonParam(mProbeNetworkClient.get());
+>>>>>>> 9876b546 (1)
         mProbeNetworkThreadRes = async(launch::async, &SLSClientManager::ProbeNetworkThread, this);
     }
     if (BOOL_FLAG(send_prefer_real_ip)) {
         mUpdateRealIpClient.reset(new sdk::Client("",
+<<<<<<< HEAD
                                                   "",
                                                   INT32_FLAG(sls_client_send_timeout)));
         mUpdateRealIpClient->SetPort(AppConfig::GetInstance()->GetDataServerPort());
+=======
+                                                  STRING_FLAG(default_access_key_id),
+                                                  STRING_FLAG(default_access_key),
+                                                  INT32_FLAG(sls_client_send_timeout),
+                                                  LoongCollectorMonitor::mIpAddr,
+                                                  AppConfig::GetInstance()->GetBindInterface()));
+        SLSControl::GetInstance()->SetSlsSendClientCommonParam(mUpdateRealIpClient.get());
+>>>>>>> 9876b546 (1)
         mUpdateRealIpThreadRes = async(launch::async, &SLSClientManager::UpdateRealIpThread, this);
     }
 }
@@ -246,19 +286,39 @@ sdk::Client* SLSClientManager::GetClient(const string& region, const string& ali
     }
 
     string endpoint = GetAvailableEndpointWithTopPriority(region);
+<<<<<<< HEAD
     auto client = make_unique<sdk::Client>(aliuid,
                                            endpoint,
                                            INT32_FLAG(sls_client_send_timeout));
+=======
+    unique_ptr<sdk::Client> client = make_unique<sdk::Client>(endpoint,
+                                                              "",
+                                                              "",
+                                                              INT32_FLAG(sls_client_send_timeout),
+                                                              LoongCollectorMonitor::mIpAddr,
+                                                              AppConfig::GetInstance()->GetBindInterface());
+    SLSControl::GetInstance()->SetSlsSendClientCommonParam(client.get());
+>>>>>>> 9876b546 (1)
     ResetClientPort(region, client.get());
     LOG_INFO(sLogger,
              ("init endpoint for sender, region", region)("uid", aliuid)("hostname", GetHostFromEndpoint(endpoint))(
                  "use https", ToString(client->IsUsingHTTPS())));
+<<<<<<< HEAD
     auto ptr = client.get();
+=======
+    int32_t lastUpdateTime;
+    SLSControl::GetInstance()->SetSlsSendClientAuth(aliuid, true, client.get(), lastUpdateTime);
+    sdk::Client* res = client.get();
+>>>>>>> 9876b546 (1)
     {
         lock_guard<mutex> lock(mClientMapMux);
         mClientMap.insert(make_pair(key, make_pair(std::move(client), time(nullptr))));
     }
+<<<<<<< HEAD
     return ptr;
+=======
+    return res;
+>>>>>>> 9876b546 (1)
 }
 
 bool SLSClientManager::ResetClientEndpoint(const string& aliuid, const string& region, time_t curTime) {
@@ -288,7 +348,10 @@ bool SLSClientManager::ResetClientEndpoint(const string& aliuid, const string& r
 }
 
 void SLSClientManager::ResetClientPort(const string& region, sdk::Client* sendClient) {
+<<<<<<< HEAD
     sendClient->SetPort(AppConfig::GetInstance()->GetDataServerPort());
+=======
+>>>>>>> 9876b546 (1)
     if (AppConfig::GetInstance()->GetDataServerPort() == 80) {
         lock_guard<mutex> lock(mRegionEndpointEntryMapLock);
         auto iter = mRegionEndpointEntryMap.find(region);
@@ -319,6 +382,7 @@ void SLSClientManager::CleanTimeoutClient() {
     }
 }
 
+<<<<<<< HEAD
 bool SLSClientManager::GetAccessKey(const std::string& aliuid,
                                     AuthType& type,
                                     std::string& accessKeyId,
@@ -329,6 +393,8 @@ bool SLSClientManager::GetAccessKey(const std::string& aliuid,
     return true;
 }
 
+=======
+>>>>>>> 9876b546 (1)
 void SLSClientManager::AddEndpointEntry(const string& region,
                                         const string& endpoint,
                                         bool isProxy,
@@ -670,6 +736,7 @@ void SLSClientManager::SetRealIp(const string& region, const string& ip) {
     pInfo->SetRealIp(ip);
 }
 
+<<<<<<< HEAD
 void SLSClientManager::GenerateUserAgent() {
     string os;
 #if defined(__linux__)
@@ -764,5 +831,7 @@ bool SLSClientManager::TryCurlEndpoint(const string& endpoint) {
         ("curl handler cannot be initialized during user environment identification", "user agent may be mislabeled"));
     return false;
 }
+=======
+>>>>>>> 9876b546 (1)
 
 } // namespace logtail

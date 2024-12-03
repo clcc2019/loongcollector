@@ -21,7 +21,13 @@
 #include <mutex>
 #include <string>
 
+<<<<<<< HEAD
 #include "MetricManager.h"
+=======
+#include "MetricConstants.h"
+#include "MetricManager.h"
+#include "MetricStore.h"
+>>>>>>> 9876b546 (1)
 
 #if defined(_MSC_VER)
 #include <Windows.h>
@@ -76,7 +82,11 @@ struct OsCpuStat {
     }
 };
 
+<<<<<<< HEAD
 class LogtailMonitor {
+=======
+class LogtailMonitor : public MetricStore {
+>>>>>>> 9876b546 (1)
 public:
     LogtailMonitor(const LogtailMonitor&) = delete;
     LogtailMonitor& operator=(const LogtailMonitor&) = delete;
@@ -122,6 +132,12 @@ private:
     //   several seconds after calling this method and before _exit(1).
     bool SendStatusProfile(bool suicide);
 
+<<<<<<< HEAD
+=======
+    // DumpToLocal dumps the @logGroup to local status log.
+    void DumpToLocal(const sls_logs::LogGroup& logGroup);
+
+>>>>>>> 9876b546 (1)
     // DumpMonitorInfo dumps simple monitor information to local.
     bool DumpMonitorInfo(time_t monitorTime);
 
@@ -187,6 +203,14 @@ public:
     void Init();
     void Stop();
 
+<<<<<<< HEAD
+=======
+    static const std::string GetInnerSelfMonitorAlarmPipelineName() { return ""; }
+    static const std::string GetInnerSelfMonitorAlarmPipeline() { return ""; }
+    static const std::string GetInnerSelfMonitorMetricPipelineName() { return "inner-self-monitor-metric-pipeline"; }
+    static const std::string GetInnerSelfMonitorMetricPipeline();
+
+>>>>>>> 9876b546 (1)
     void SetAgentCpu(double cpu) { mAgentCpu->Set(cpu); }
     void SetAgentMemory(uint64_t mem) { mAgentMemory->Set(mem); }
     void SetAgentGoMemory(uint64_t mem) { mAgentGoMemory->Set(mem); }

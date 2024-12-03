@@ -19,7 +19,10 @@
 #include <vector>
 
 #include "config/PipelineConfig.h"
+<<<<<<< HEAD
 #include "config/common_provider/CommonConfigProvider.h"
+=======
+>>>>>>> 9876b546 (1)
 #include "config/watcher/PipelineConfigWatcher.h"
 #include "pipeline/Pipeline.h"
 #include "pipeline/PipelineManager.h"
@@ -268,7 +271,11 @@ private:
 
 void ConfigUpdateUnittest::OnStartUp() const {
     auto diff = PipelineConfigWatcher::GetInstance()->CheckConfigDiff();
+<<<<<<< HEAD
     APSARA_TEST_EQUAL(0U, diff.first.mAdded.size());
+=======
+    APSARA_TEST_TRUE(diff.first.IsEmpty());
+>>>>>>> 9876b546 (1)
     APSARA_TEST_TRUE(diff.second.IsEmpty());
 
     GenerateInitialConfigs();

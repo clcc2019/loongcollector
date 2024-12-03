@@ -48,6 +48,11 @@ std::string GetLocalEventDataFileName();
 std::string GetInotifyWatcherDirsDumpFileName();
 std::string GetAgentLoggersPrefix();
 std::string GetAgentLogName();
+<<<<<<< HEAD
+=======
+std::string GetAgentSnapshotDir();
+std::string GetAgentStatusLogName();
+>>>>>>> 9876b546 (1)
 std::string GetObserverEbpfHostPath();
 std::string GetSendBufferFileNamePrefix();
 std::string GetLegacyUserLocalConfigFilePath();

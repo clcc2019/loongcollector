@@ -19,8 +19,11 @@
 #include "unittest/Unittest.h"
 #include "unittest/plugin/PluginMock.h"
 
+<<<<<<< HEAD
 DECLARE_FLAG_INT32(discard_send_fail_interval);
 
+=======
+>>>>>>> 9876b546 (1)
 using namespace std;
 
 namespace logtail {
@@ -28,6 +31,7 @@ namespace logtail {
 class FlusherRunnerUnittest : public ::testing::Test {
 public:
     void TestDispatch();
+<<<<<<< HEAD
     void TestPushToHttpSink();
 
 protected:
@@ -35,6 +39,8 @@ protected:
         SenderQueueManager::GetInstance()->Clear();
         HttpSink::GetInstance()->mQueue.Clear();
     }
+=======
+>>>>>>> 9876b546 (1)
 };
 
 void FlusherRunnerUnittest::TestDispatch() {
@@ -76,6 +82,7 @@ void FlusherRunnerUnittest::TestDispatch() {
     }
 }
 
+<<<<<<< HEAD
 void FlusherRunnerUnittest::TestPushToHttpSink() {
     auto flusher = make_unique<FlusherHttpMock>();
     Json::Value tmp;
@@ -138,6 +145,9 @@ void FlusherRunnerUnittest::TestPushToHttpSink() {
 
 UNIT_TEST_CASE(FlusherRunnerUnittest, TestDispatch)
 UNIT_TEST_CASE(FlusherRunnerUnittest, TestPushToHttpSink)
+=======
+UNIT_TEST_CASE(FlusherRunnerUnittest, TestDispatch)
+>>>>>>> 9876b546 (1)
 
 } // namespace logtail
 

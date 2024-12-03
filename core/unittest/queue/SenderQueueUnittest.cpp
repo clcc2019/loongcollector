@@ -29,7 +29,11 @@ public:
 
 protected:
     static void SetUpTestCase() {
+<<<<<<< HEAD
         sConcurrencyLimiter = make_shared<ConcurrencyLimiter>("", 80);
+=======
+        sConcurrencyLimiter = make_shared<ConcurrencyLimiter>(80);
+>>>>>>> 9876b546 (1)
         sCtx.SetConfigName("test_config");
     }
 
@@ -42,7 +46,11 @@ protected:
 
     void TearDown() override {
         sFeedback.Clear();
+<<<<<<< HEAD
         sConcurrencyLimiter = make_shared<ConcurrencyLimiter>("", 80);
+=======
+        sConcurrencyLimiter = make_shared<ConcurrencyLimiter>(80);
+>>>>>>> 9876b546 (1)
     }
 
 private:

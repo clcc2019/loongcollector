@@ -21,7 +21,11 @@
 #include "container_manager/ContainerDiscoveryOptions.h"
 #include "file_server/FileDiscoveryOptions.h"
 #include "file_server/MultilineOptions.h"
+<<<<<<< HEAD
 #include "monitor/metric_models/ReentrantMetricsRecord.h"
+=======
+#include "monitor/PluginMetricManager.h"
+>>>>>>> 9876b546 (1)
 #include "pipeline/plugin/interface/Input.h"
 #include "file_server/reader/FileReaderOptions.h"
 

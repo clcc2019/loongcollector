@@ -21,7 +21,11 @@
 #include "ebpf/config.h"
 #include "pipeline/plugin/interface/Input.h"
 #include "ebpf/eBPFServer.h"
+<<<<<<< HEAD
 #include "monitor/metric_models/ReentrantMetricsRecord.h"
+=======
+#include "monitor/PluginMetricManager.h"
+>>>>>>> 9876b546 (1)
 
 namespace logtail {
 

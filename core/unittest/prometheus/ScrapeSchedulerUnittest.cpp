@@ -32,6 +32,10 @@
 using namespace std;
 
 namespace logtail {
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9876b546 (1)
 class ScrapeSchedulerUnittest : public testing::Test {
 public:
     void TestInitscrapeScheduler();
@@ -41,7 +45,10 @@ public:
 
     void TestScheduler();
     void TestQueueIsFull();
+<<<<<<< HEAD
     void TestExactlyScrape();
+=======
+>>>>>>> 9876b546 (1)
 
 protected:
     void SetUp() override {
@@ -220,8 +227,12 @@ void ScrapeSchedulerUnittest::TestQueueIsFull() {
     EventPool eventPool{true};
     event.SetComponent(timer, &eventPool);
     auto now = std::chrono::steady_clock::now();
+<<<<<<< HEAD
     auto nowScrape = std::chrono::system_clock::now();
     event.SetFirstExecTime(now, nowScrape);
+=======
+    event.SetFirstExecTime(now);
+>>>>>>> 9876b546 (1)
     event.ScheduleNext();
 
     APSARA_TEST_TRUE(timer->mQueue.size() == 1);
@@ -236,6 +247,7 @@ void ScrapeSchedulerUnittest::TestQueueIsFull() {
     APSARA_TEST_EQUAL(now + std::chrono::seconds(1), next->GetExecTime());
 }
 
+<<<<<<< HEAD
 void ScrapeSchedulerUnittest::TestExactlyScrape() {
     Labels labels;
     labels.Set(prometheus::ADDRESS_LABEL_NAME, "localhost:8080");
@@ -265,12 +277,17 @@ void ScrapeSchedulerUnittest::TestExactlyScrape() {
                       std::chrono::seconds(mScrapeConfig->mScrapeIntervalSeconds * 3));
 }
 
+=======
+>>>>>>> 9876b546 (1)
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestInitscrapeScheduler)
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestProcess)
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestStreamMetricWriteCallback)
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestScheduler)
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestQueueIsFull)
+<<<<<<< HEAD
 UNIT_TEST_CASE(ScrapeSchedulerUnittest, TestExactlyScrape)
+=======
+>>>>>>> 9876b546 (1)
 
 
 } // namespace logtail

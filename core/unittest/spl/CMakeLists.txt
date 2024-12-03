@@ -17,10 +17,16 @@ project(spl_unittest)
 
 
 add_executable(spl_unittest SplUnittest.cpp)
+<<<<<<< HEAD
 target_link_libraries(spl_unittest ${UT_BASE_TARGET})
 
 include(GoogleTest)
 gtest_discover_tests(spl_unittest)
 
 add_executable(spl_benchmark_test SplBenchmark.cpp)
+=======
+add_executable(spl_benchmark_test SplBenchmark.cpp)
+target_link_libraries(spl_unittest ${UT_BASE_TARGET})
+
+>>>>>>> 9876b546 (1)
 target_link_libraries(spl_benchmark_test ${UT_BASE_TARGET})

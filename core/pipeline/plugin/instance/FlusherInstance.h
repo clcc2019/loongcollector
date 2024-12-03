@@ -21,7 +21,11 @@
 #include <memory>
 
 #include "models/PipelineEventGroup.h"
+<<<<<<< HEAD
 #include "monitor/metric_models/ReentrantMetricsRecord.h"
+=======
+#include "monitor/PluginMetricManager.h"
+>>>>>>> 9876b546 (1)
 #include "pipeline/PipelineContext.h"
 #include "pipeline/plugin/instance/PluginInstance.h"
 #include "pipeline/plugin/interface/Flusher.h"

@@ -21,6 +21,7 @@ target_link_libraries(flusher_sls_unittest ${UT_BASE_TARGET})
 add_executable(pack_id_manager_unittest PackIdManagerUnittest.cpp)
 target_link_libraries(pack_id_manager_unittest ${UT_BASE_TARGET})
 
+<<<<<<< HEAD
 if (ENABLE_ENTERPRISE)
     add_executable(enterprise_sls_client_manager_unittest EnterpriseSLSClientManagerUnittest.cpp)
     target_link_libraries(enterprise_sls_client_manager_unittest ${UT_BASE_TARGET})
@@ -32,3 +33,8 @@ gtest_discover_tests(pack_id_manager_unittest)
 if (ENABLE_ENTERPRISE)
     gtest_discover_tests(enterprise_sls_client_manager_unittest)
 endif ()
+=======
+include(GoogleTest)
+gtest_discover_tests(flusher_sls_unittest)
+gtest_discover_tests(pack_id_manager_unittest)
+>>>>>>> 9876b546 (1)

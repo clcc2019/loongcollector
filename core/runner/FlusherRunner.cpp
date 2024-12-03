@@ -34,8 +34,11 @@
 DEFINE_FLAG_INT32(flusher_runner_exit_timeout_secs, "", 60);
 DEFINE_FLAG_INT32(check_send_client_timeout_interval, "", 600);
 
+<<<<<<< HEAD
 DECLARE_FLAG_INT32(discard_send_fail_interval);
 
+=======
+>>>>>>> 9876b546 (1)
 using namespace std;
 
 namespace logtail {
@@ -119,6 +122,7 @@ void FlusherRunner::PushToHttpSink(SenderQueueItem* item, bool withLimit) {
         this_thread::sleep_for(chrono::milliseconds(10));
     }
 
+<<<<<<< HEAD
     unique_ptr<HttpSinkRequest> req;
     bool keepItem = false;
     if (!static_cast<HttpFlusher*>(item->mFlusher)->BuildRequest(item, req, &keepItem)) {
@@ -138,6 +142,9 @@ void FlusherRunner::PushToHttpSink(SenderQueueItem* item, bool withLimit) {
         return;
     }
 
+=======
+    auto req = static_cast<HttpFlusher*>(item->mFlusher)->BuildRequest(item);
+>>>>>>> 9876b546 (1)
     req->mEnqueTime = item->mLastSendTime = chrono::system_clock::now();
     HttpSink::GetInstance()->AddRequest(std::move(req));
     ++mHttpSendingCnt;
