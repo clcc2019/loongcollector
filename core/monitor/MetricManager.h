@@ -22,25 +22,15 @@
 #include <unordered_map>
 #include <vector>
 
-<<<<<<< HEAD
-#include "common/Lock.h"
-#include "models/PipelineEventGroup.h"
-#include "monitor/metric_constants/MetricConstants.h"
-#include "monitor/metric_models/MetricRecord.h"
-#include "monitor/metric_models/SelfMonitorMetricEvent.h"
-=======
 #include "MetricRecord.h"
 #include "common/Lock.h"
 #include "models/PipelineEventGroup.h"
 #include "protobuf/sls/sls_logs.pb.h"
->>>>>>> 9876b546 (1)
 
 namespace logtail {
 
 extern const std::string METRIC_TOPIC_TYPE;
 
-<<<<<<< HEAD
-=======
 struct SelfMonitorMetricRule {
     bool mEnable;
     size_t mInterval;
@@ -83,7 +73,6 @@ private:
 };
 using SelfMonitorMetricEventMap = std::unordered_map<SelfMonitorMetricEventKey, SelfMonitorMetricEvent>;
 
->>>>>>> 9876b546 (1)
 class WriteMetrics {
 private:
     WriteMetrics() = default;

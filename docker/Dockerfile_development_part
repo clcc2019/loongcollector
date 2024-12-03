@@ -15,11 +15,7 @@
 FROM sls-opensource-registry.cn-shanghai.cr.aliyuncs.com/loongcollector-community-edition/loongcollector-build-linux:2.0.5
 
 ARG HOST_OS=Linux
-<<<<<<< HEAD
-ARG VERSION=0.0.1
-=======
 ARG VERSION=0.2.0
->>>>>>> 9876b546 (1)
 
 USER root
 WORKDIR /loongcollector

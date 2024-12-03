@@ -14,29 +14,11 @@
 
 #include "pipeline/limiter/ConcurrencyLimiter.h"
 
-<<<<<<< HEAD
-#include "common/StringTools.h"
-#include "logger/Logger.h"
-
-=======
->>>>>>> 9876b546 (1)
 using namespace std;
 
 namespace logtail {
 
 #ifdef APSARA_UNIT_TEST_MAIN
-<<<<<<< HEAD
-uint32_t ConcurrencyLimiter::GetCurrentLimit() const {
-    lock_guard<mutex> lock(mLimiterMux);
-    return mCurrenctConcurrency;
-}
-
-uint32_t ConcurrencyLimiter::GetCurrentInterval() const {
-    lock_guard<mutex> lock(mLimiterMux);
-    return mRetryIntervalSecs;
-}
-void ConcurrencyLimiter::SetCurrentLimit(uint32_t limit) {
-=======
 uint32_t ConcurrencyLimiter::GetCurrentLimit() const { 
     lock_guard<mutex> lock(mLimiterMux);
     return mCurrenctConcurrency; 
@@ -47,7 +29,6 @@ uint32_t ConcurrencyLimiter::GetCurrentInterval() const {
     return mRetryIntervalSecs; 
 }
 void ConcurrencyLimiter::SetCurrentLimit(uint32_t limit) { 
->>>>>>> 9876b546 (1)
     lock_guard<mutex> lock(mLimiterMux);
     mCurrenctConcurrency = limit;
 }
@@ -55,19 +36,11 @@ void ConcurrencyLimiter::SetCurrentLimit(uint32_t limit) {
 void ConcurrencyLimiter::SetInSendingCount(uint32_t count) {
     mInSendingCnt.store(count);
 }
-<<<<<<< HEAD
-uint32_t ConcurrencyLimiter::GetInSendingCount() const {
-    return mInSendingCnt.load();
-}
-#endif
-
-=======
 uint32_t ConcurrencyLimiter::GetInSendingCount() const { return mInSendingCnt.load(); }
 
 #endif
 
 
->>>>>>> 9876b546 (1)
 bool ConcurrencyLimiter::IsValidToPop() {
     lock_guard<mutex> lock(mLimiterMux);
     if (mCurrenctConcurrency == 0) {
@@ -81,11 +54,7 @@ bool ConcurrencyLimiter::IsValidToPop() {
     }
     if (mCurrenctConcurrency > mInSendingCnt.load()) {
         return true;
-<<<<<<< HEAD
-    }
-=======
     } 
->>>>>>> 9876b546 (1)
     return false;
 }
 
@@ -98,54 +67,22 @@ void ConcurrencyLimiter::OnSendDone() {
 }
 
 void ConcurrencyLimiter::OnSuccess() {
-<<<<<<< HEAD
-    lock_guard<mutex> lock(mLimiterMux);
-    if (mCurrenctConcurrency <= 0) {
-        mRetryIntervalSecs = mMinRetryIntervalSecs;
-        LOG_INFO(sLogger, ("reset send retry interval, type", mDescription));
-    }
-    if (mCurrenctConcurrency != mMaxConcurrency) {
-        ++mCurrenctConcurrency;
-        if (mCurrenctConcurrency == mMaxConcurrency) {
-            LOG_INFO(sLogger,
-                     ("increase send concurrency to maximum, type", mDescription)("concurrency", mCurrenctConcurrency));
-        } else {
-            LOG_DEBUG(sLogger,
-                      ("increase send concurrency, type",
-                       mDescription)("from", mCurrenctConcurrency - 1)("to", mCurrenctConcurrency));
-        }
-=======
     lock_guard<mutex> lock(mLimiterMux);    
     if (mCurrenctConcurrency <= 0) {
         mRetryIntervalSecs = mMinRetryIntervalSecs;
     }    
     if (mCurrenctConcurrency != mMaxConcurrency) {
         ++mCurrenctConcurrency;
->>>>>>> 9876b546 (1)
     }
 }
 
 void ConcurrencyLimiter::OnFail() {
     lock_guard<mutex> lock(mLimiterMux);
     if (mCurrenctConcurrency != 0) {
-<<<<<<< HEAD
-        auto old = mCurrenctConcurrency;
-        mCurrenctConcurrency = static_cast<uint32_t>(mCurrenctConcurrency * mConcurrencyDownRatio);
-        LOG_INFO(sLogger, ("decrease send concurrency, type", mDescription)("from", old)("to", mCurrenctConcurrency));
-    } else {
-        if (mRetryIntervalSecs != mMaxRetryIntervalSecs) {
-            auto old = mRetryIntervalSecs;
-            mRetryIntervalSecs
-                = min(mMaxRetryIntervalSecs, static_cast<uint32_t>(mRetryIntervalSecs * mRetryIntervalUpRatio));
-            LOG_INFO(sLogger,
-                     ("increase send retry interval, type",
-                      mDescription)("from", ToString(old) + "s")("to", ToString(mRetryIntervalSecs) + "s"));
-=======
         mCurrenctConcurrency = static_cast<uint32_t>(mCurrenctConcurrency * mConcurrencyDownRatio);
     } else {
         if (mRetryIntervalSecs != mMaxRetryIntervalSecs) {
             mRetryIntervalSecs = min(mMaxRetryIntervalSecs, static_cast<uint32_t>(mRetryIntervalSecs * mRetryIntervalUpRatio));
->>>>>>> 9876b546 (1)
         }
     }
 }

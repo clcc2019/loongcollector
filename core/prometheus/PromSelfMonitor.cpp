@@ -4,11 +4,7 @@
 #include <string>
 #include <unordered_map>
 
-<<<<<<< HEAD
-#include "monitor/metric_models/MetricTypes.h"
-=======
 #include "monitor/MetricTypes.h"
->>>>>>> 9876b546 (1)
 #include "monitor/metric_constants/MetricConstants.h"
 using namespace std;
 

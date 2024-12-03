@@ -128,24 +128,9 @@ public:
         return true;
     }
     bool FlushAll() override { return mIsValid; }
-<<<<<<< HEAD
-    bool BuildRequest(SenderQueueItem* item, std::unique_ptr<HttpSinkRequest>& req, bool* keepItem) const override {
-        if (item->mData == "invalid_keep") {
-            *keepItem = true;
-            return false;
-        }
-        if (item->mData == "invalid_discard") {
-            *keepItem = false;
-            return false;
-        }
-        req = std::make_unique<HttpSinkRequest>(
-            "", false, "", 80, "", "", std::map<std::string, std::string>(), "", nullptr);
-        return true;
-=======
     std::unique_ptr<HttpSinkRequest> BuildRequest(SenderQueueItem* item) const override {
         return std::make_unique<HttpSinkRequest>(
             "", false, "", 80, "", "", std::map<std::string, std::string>(), "", nullptr);
->>>>>>> 9876b546 (1)
     }
     void OnSendDone(const HttpResponse& response, SenderQueueItem* item) override {}
 

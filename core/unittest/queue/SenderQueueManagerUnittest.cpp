@@ -39,11 +39,7 @@ public:
 protected:
     static void SetUpTestCase() {
         sManager = SenderQueueManager::GetInstance();
-<<<<<<< HEAD
-        sConcurrencyLimiter = make_shared<ConcurrencyLimiter>("", 80);
-=======
         sConcurrencyLimiter = make_shared<ConcurrencyLimiter>(80);
->>>>>>> 9876b546 (1)
         sManager->mDefaultQueueParam.mCapacity = 2;
         sManager->mDefaultQueueParam.mLowWatermark = 1;
         sManager->mDefaultQueueParam.mHighWatermark = 3;
@@ -66,11 +62,7 @@ protected:
         sManager->Clear();
         ExactlyOnceQueueManager::GetInstance()->Clear();
         QueueKeyManager::GetInstance()->Clear();
-<<<<<<< HEAD
-        sConcurrencyLimiter = make_shared<ConcurrencyLimiter>("", 80);
-=======
         sConcurrencyLimiter = make_shared<ConcurrencyLimiter>(80);
->>>>>>> 9876b546 (1)
     }
 
 private:
@@ -114,11 +106,7 @@ void SenderQueueManagerUnittest::TestCreateQueue() {
     }
     {
         // resued queue
-<<<<<<< HEAD
-        shared_ptr<ConcurrencyLimiter> newLimiter = make_shared<ConcurrencyLimiter>("", 80);
-=======
         shared_ptr<ConcurrencyLimiter> newLimiter = make_shared<ConcurrencyLimiter>(80);
->>>>>>> 9876b546 (1)
         uint32_t maxRate = 10U;
         APSARA_TEST_TRUE(
             sManager->CreateQueue(0, sFlusherId, sCtx, {{"region", newLimiter}}, maxRate));

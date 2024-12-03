@@ -18,13 +18,10 @@
 
 #include "Monitor.h"
 #include "app_config/AppConfig.h"
-<<<<<<< HEAD
-=======
 #include "common/HashUtil.h"
 #include "common/JsonUtil.h"
 #include "common/StringTools.h"
 #include "common/TimeUtil.h"
->>>>>>> 9876b546 (1)
 #include "go_pipeline/LogtailPlugin.h"
 #include "logger/Logger.h"
 #include "provider/Provider.h"
@@ -40,8 +37,6 @@ const string METRIC_KEY_LABEL = "label";
 const string METRIC_TOPIC_TYPE = "loongcollector_metric";
 const string METRIC_EXPORT_TYPE_GO = "direct";
 const string METRIC_EXPORT_TYPE_CPP = "cpp_provided";
-<<<<<<< HEAD
-=======
 const string METRIC_GO_KEY_LABELS = "labels";
 const string METRIC_GO_KEY_COUNTERS = "counters";
 const string METRIC_GO_KEY_GAUGES = "gauges";
@@ -195,7 +190,6 @@ void SelfMonitorMetricEvent::ReadAsMetricEvent(MetricEvent* metricEventPtr) {
     mLastSendInterval = 0;
     mUpdatedFlag = false;
 }
->>>>>>> 9876b546 (1)
 
 WriteMetrics::~WriteMetrics() {
     Clear();
@@ -397,10 +391,7 @@ void ReadMetrics::UpdateGoCppProvidedMetrics(vector<map<string, string>>& metric
             if (metric.first == METRIC_AGENT_GO_ROUTINES_TOTAL) {
                 LoongCollectorMonitor::GetInstance()->SetAgentGoRoutinesTotal(stoi(metric.second));
             }
-<<<<<<< HEAD
-=======
             LogtailMonitor::GetInstance()->UpdateMetric(metric.first, metric.second);
->>>>>>> 9876b546 (1)
         }
     }
 }

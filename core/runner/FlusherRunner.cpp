@@ -34,11 +34,6 @@
 DEFINE_FLAG_INT32(flusher_runner_exit_timeout_secs, "", 60);
 DEFINE_FLAG_INT32(check_send_client_timeout_interval, "", 600);
 
-<<<<<<< HEAD
-DECLARE_FLAG_INT32(discard_send_fail_interval);
-
-=======
->>>>>>> 9876b546 (1)
 using namespace std;
 
 namespace logtail {
@@ -122,29 +117,7 @@ void FlusherRunner::PushToHttpSink(SenderQueueItem* item, bool withLimit) {
         this_thread::sleep_for(chrono::milliseconds(10));
     }
 
-<<<<<<< HEAD
-    unique_ptr<HttpSinkRequest> req;
-    bool keepItem = false;
-    if (!static_cast<HttpFlusher*>(item->mFlusher)->BuildRequest(item, req, &keepItem)) {
-        if (keepItem
-            && chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - item->mFirstEnqueTime).count()
-                < INT32_FLAG(discard_send_fail_interval)) {
-            item->mStatus = SendingStatus::IDLE;
-            LOG_DEBUG(sLogger,
-                      ("failed to build request", "retry later")("item address", item)(
-                          "config-flusher-dst", QueueKeyManager::GetInstance()->GetName(item->mQueueKey)));
-        } else {
-            LOG_WARNING(sLogger,
-                        ("failed to build request", "discard item")("item address", item)(
-                            "config-flusher-dst", QueueKeyManager::GetInstance()->GetName(item->mQueueKey)));
-            SenderQueueManager::GetInstance()->RemoveItem(item->mQueueKey, item);
-        }
-        return;
-    }
-
-=======
     auto req = static_cast<HttpFlusher*>(item->mFlusher)->BuildRequest(item);
->>>>>>> 9876b546 (1)
     req->mEnqueTime = item->mLastSendTime = chrono::system_clock::now();
     HttpSink::GetInstance()->AddRequest(std::move(req));
     ++mHttpSendingCnt;

@@ -1,16 +1,8 @@
-<<<<<<< HEAD
-# Alibaba LoongCollector - Fast and Lightweight Observability Data Collector | 中文用户手册（[GitBook](https://ilogtail.gitbook.io/ilogtail-docs/) | [可观测中文社区](https://open.observability.cn/project/ilogtail/about/)）
-
-<img src="https://ilogtail-community-edition.oss-cn-shanghai.aliyuncs.com/images/logo/jpg/black-blue.jpg" alt="loongcollector logo" height="100px" align="center" />
-
-LoongCollector was born for observable scenarios and has many production-level features such as lightweight, high performance, and automated configuration, which are widely used internally by Alibaba Group and tens of thousands of external Alibaba Cloud customers. You can deploy it in physical machines, Kubernetes and other environments to collect telemetry data, such as logs, traces and metrics.
-=======
 # Alibaba iLogtail - Fast and Lightweight Observability Data Collector | 中文用户手册（[GitBook](https://ilogtail.gitbook.io/ilogtail-docs/) | [可观测中文社区](https://open.observability.cn/project/ilogtail/about/)）
 
 <img src="https://sls-opensource.oss-us-west-1.aliyuncs.com/ilogtail/ilogtail.svg?versionId=CAEQMxiBgIDEmq.m6BciIDkzNmE2OWU4NzIwZjQ1Y2ZiYmIxZjhiYjMyNmQxZTdi" alt="ilogtail logo" height="150px" align="right" />
 
 iLogtail was born for observable scenarios and has many production-level features such as lightweight, high performance, and automated configuration, which are widely used internally by Alibaba Group and tens of thousands of external Alibaba Cloud customers. You can deploy it in physical machines, Kubernetes and other environments to collect telemetry data, such as logs, traces and metrics.
->>>>>>> 9876b546 (1)
 
 [![GitHub contributors](https://img.shields.io/github/contributors/alibaba/ilogtail)](https://github.com/alibaba/ilogtail/contributors)
 [![GitHub stars](https://img.shields.io/github/stars/alibaba/ilogtail)](https://github.com/alibaba/ilogtail/stargazers)
@@ -22,11 +14,7 @@ iLogtail was born for observable scenarios and has many production-level feature
 
 ## Abstract
 
-<<<<<<< HEAD
-The core advantages of **LoongCollector**:
-=======
 The core advantages of **iLogtail**:
->>>>>>> 9876b546 (1)
 
 * Support a variety of Logs, Traces, Metrics data collection, and friendly to container and Kubernetes environment support.
 * The resource cost of data collection is quite low, 5-20 times better than similar telemetry data collection Agent performance.
@@ -35,11 +23,7 @@ The core advantages of **iLogtail**:
 * Support configuration remote management and provide a variety of ways, such as SLS console, SDK, K8s Operator, etc.
 * Supports multiple advanced features such as self-monitoring, flow control, resource control, alarms, and statistics collection.
 
-<<<<<<< HEAD
-**LoongCollector** supports the collection of a variety of telemetry data and transmission to a variety of different backends, such as [SLS observable platform](https://www.aliyun.com/product/sls). The data supported for collection are mainly as follows:
-=======
 **iLogtail** supports the collection of a variety of telemetry data and transmission to a variety of different backends, such as [SLS observable platform](https://www.aliyun.com/product/sls). The data supported for collection are mainly as follows:
->>>>>>> 9876b546 (1)
 
 * Logs
   * Collect static log files
@@ -61,11 +45,7 @@ The core advantages of **iLogtail**:
 
 ## Quick Start
 
-<<<<<<< HEAD
-For the complexity of C++ dependencies, the compilation of LoongCollector requires you have docker installed. If you aim to build LoongCollector from sources, you can go ahead and start with the following commands.
-=======
 For the complexity of C++ dependencies, the compilation of iLogtail requires you have docker installed. If you aim to build iLogtail from sources, you can go ahead and start with the following commands.
->>>>>>> 9876b546 (1)
 
 1. Start with local
 
@@ -73,13 +53,8 @@ For the complexity of C++ dependencies, the compilation of iLogtail requires you
 make
 cp -r example_config/quick_start/* output
 cd output
-<<<<<<< HEAD
-./loongcollector
-# Now, LoongCollector is collecting data from output/simple.log and outputing the result to stdout
-=======
 ./ilogtail
 # Now, ilogtail is collecting data from output/simple.log and outputing the result to stdout
->>>>>>> 9876b546 (1)
 ```
 
  HEAD
@@ -118,23 +93,14 @@ There are many ways to contribute:
 You can report bugs, make suggestions or participate in discussions through [Github Issues](https://github.com/alibaba/ilogtail/issues) and [Github Discussions](https://github.com/alibaba/ilogtail/discussions), or contact us with the following ways:
 
 * Bilibili：[阿里云SLS](https://space.bilibili.com/630680534?from=search&seid=2845737427240690794&spm_id_from=333.337.0.0)
-<<<<<<< HEAD
-* Zhihu：[LoongCollector社区](https://www.zhihu.com/column/c_1533139823409270785)
-* DingTalk：LoongCollector社区
-=======
 * Zhihu：[iLogtail社区](https://www.zhihu.com/column/c_1533139823409270785)
 * DingTalk：iLogtail社区
->>>>>>> 9876b546 (1)
 
 <img src="https://ilogtail-community-edition.oss-cn-shanghai.aliyuncs.com/images/chatgroup/chatgroup_20240408.png" style="width: 50%; height: 50%" />
 
 ## Our Users
 
-<<<<<<< HEAD
-Tens of thousands of companies use LoongCollector in Alibaba Cloud, IDC, or other clouds. More details please see [here](https://help.aliyun.com/document_detail/250269.html).
-=======
 Tens of thousands of companies use iLogtail in Alibaba Cloud, IDC, or other clouds. More details please see [here](https://help.aliyun.com/document_detail/250269.html).
->>>>>>> 9876b546 (1)
 
 ## Licence
 

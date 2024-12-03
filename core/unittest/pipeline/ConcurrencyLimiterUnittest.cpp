@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-// Copyright 2024 iLogtail Authors
-=======
 // Copyright 2023 iLogtail Authors
->>>>>>> 9876b546 (1)
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-<<<<<<< HEAD
-=======
 #include <memory>
 #include <string>
 
 #include <json/json.h>
 
 #include "common/JsonUtil.h"
->>>>>>> 9876b546 (1)
 #include "pipeline/limiter/ConcurrencyLimiter.h"
 #include "unittest/Unittest.h"
 
@@ -38,11 +31,7 @@ public:
 };
 
 void ConcurrencyLimiterUnittest::TestLimiter() const {
-<<<<<<< HEAD
-    shared_ptr<ConcurrencyLimiter> sConcurrencyLimiter = make_shared<ConcurrencyLimiter>("", 80);
-=======
     shared_ptr<ConcurrencyLimiter> sConcurrencyLimiter = make_shared<ConcurrencyLimiter>(80);
->>>>>>> 9876b546 (1)
     // comcurrency = 10, count = 0
     APSARA_TEST_EQUAL(true, sConcurrencyLimiter->IsValidToPop());
     sConcurrencyLimiter->PostPop();
@@ -103,10 +92,7 @@ void ConcurrencyLimiterUnittest::TestLimiter() const {
     APSARA_TEST_EQUAL(30U, sConcurrencyLimiter->GetCurrentInterval());
 }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 9876b546 (1)
 UNIT_TEST_CASE(ConcurrencyLimiterUnittest, TestLimiter)
 
 } // namespace logtail

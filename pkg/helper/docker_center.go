@@ -1072,11 +1072,7 @@ func (dc *DockerCenter) fetchAll() error {
 	}
 	dc.updateContainers(containerMap)
 
-<<<<<<< HEAD
-	return nil
-=======
 	return err
->>>>>>> 9876b546 (1)
 }
 
 func (dc *DockerCenter) fetchOne(containerID string, tryFindSandbox bool) error {

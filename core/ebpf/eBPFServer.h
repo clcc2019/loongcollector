@@ -29,11 +29,7 @@
 #include "ebpf/handler/AbstractHandler.h"
 #include "ebpf/handler/ObserveHandler.h"
 #include "ebpf/handler/SecurityHandler.h"
-<<<<<<< HEAD
-#include "monitor/metric_models/MetricTypes.h"
-=======
 #include "monitor/MetricTypes.h"
->>>>>>> 9876b546 (1)
 #include "ebpf/SelfMonitor.h"
 
 namespace logtail {

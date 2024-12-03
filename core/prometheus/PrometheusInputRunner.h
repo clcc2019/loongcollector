@@ -22,11 +22,7 @@
 
 #include "common/Lock.h"
 #include "common/timer/Timer.h"
-<<<<<<< HEAD
-#include "monitor/metric_models/MetricTypes.h"
-=======
 #include "monitor/MetricTypes.h"
->>>>>>> 9876b546 (1)
 #include "prometheus/schedulers/TargetSubscriberScheduler.h"
 #include "runner/InputRunner.h"
 #include "sdk/Common.h"

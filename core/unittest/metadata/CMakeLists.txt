@@ -15,16 +15,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(metadata_unittest)
 
-<<<<<<< HEAD
-# add_executable(metadata_unittest K8sMetadataUnittest.cpp)
-# target_link_libraries(metadata_unittest ${UT_BASE_TARGET})
-
-include(GoogleTest)
-# gtest_discover_tests(metadata_unittest)
-=======
 add_executable(metadata_unittest K8sMetadataUnittest.cpp)
 target_link_libraries(metadata_unittest ${UT_BASE_TARGET})
 
 include(GoogleTest)
 gtest_discover_tests(metadata_unittest)
->>>>>>> 9876b546 (1)

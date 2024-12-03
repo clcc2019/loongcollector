@@ -88,8 +88,6 @@ foreach (DEP_NAME ${DEP_NAME_LIST})
     endif ()
 endforeach (DEP_NAME)
 
-<<<<<<< HEAD
-=======
 # spdlog, replace implementation.
 if (spdlog_${INCLUDE_DIR_SUFFIX})
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/deps/spdlog/sinks/rotating_file_sink-inl.h
@@ -99,7 +97,6 @@ else ()
             DESTINATION ${DEPS_INCLUDE_ROOT}/spdlog/sinks)
 endif ()
 
->>>>>>> 9876b546 (1)
 # gtest
 macro(link_gtest target_name)
     if (gtest_${LINK_OPTION_SUFFIX})

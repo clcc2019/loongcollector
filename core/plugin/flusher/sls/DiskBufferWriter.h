@@ -24,15 +24,9 @@
 #include <vector>
 
 #include "common/SafeQueue.h"
-<<<<<<< HEAD
-#include "pipeline/queue/SenderQueueItem.h"
-#include "plugin/flusher/sls/SendResult.h"
-#include "protobuf/sls/logtail_buffer_meta.pb.h"
-=======
 #include "plugin/flusher/sls/SendResult.h"
 #include "protobuf/sls/logtail_buffer_meta.pb.h"
 #include "pipeline/queue/SenderQueueItem.h"
->>>>>>> 9876b546 (1)
 #include "sdk/Client.h"
 
 namespace logtail {
@@ -71,11 +65,6 @@ private:
     void BufferSenderThread();
 
     SendResult SendToNetSync(sdk::Client* sendClient,
-<<<<<<< HEAD
-                             const std::string& region,
-                             const std::string& endpoint,
-=======
->>>>>>> 9876b546 (1)
                              const sls_logs::LogtailBufferMeta& bufferMeta,
                              const std::string& logData,
                              std::string& errorCode);

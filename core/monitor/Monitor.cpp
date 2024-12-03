@@ -229,11 +229,6 @@ void LogtailMonitor::Monitor() {
     SendStatusProfile(true);
 }
 
-<<<<<<< HEAD
-bool LogtailMonitor::SendStatusProfile(bool suicide) {
-    mStatusCount++;
-    if (!suicide && mStatusCount % 2 != 0)
-=======
 template <typename T>
 static void AddLogContent(sls_logs::Log* log, const char* key, const T& val) {
     auto content = log->add_contents();
@@ -249,7 +244,6 @@ bool LogtailMonitor::SendStatusProfile(bool suicide) {
     else if (mStatusCount % 2 == 0)
         category = "logtail_status_profile";
     else
->>>>>>> 9876b546 (1)
         return false;
 
     auto now = GetCurrentLogtailTime();
@@ -264,14 +258,6 @@ bool LogtailMonitor::SendStatusProfile(bool suicide) {
         sleep(10);
         _exit(1);
     }
-<<<<<<< HEAD
-    // CPU usage of Logtail process.
-    LoongCollectorMonitor::GetInstance()->SetAgentCpu(mCpuStat.mCpuUsage);
-    // Memory usage of Logtail process.
-    LoongCollectorMonitor::GetInstance()->SetAgentMemory(mMemStat.mRss);
-
-    return mIsThreadRunning;
-=======
 
     // the unique id of current instance
     std::string id = sdk::Base64Enconde(LoongCollectorMonitor::mHostname + LoongCollectorMonitor::mIpAddr
@@ -366,7 +352,6 @@ bool LogtailMonitor::SendStatusProfile(bool suicide) {
         }
     }
     return true;
->>>>>>> 9876b546 (1)
 }
 
 bool LogtailMonitor::GetMemStat() {
@@ -488,8 +473,6 @@ bool LogtailMonitor::CheckHardMemLimit() {
     return mMemStat.mRss > 5 * AppConfig::GetInstance()->GetMemUsageUpLimit();
 }
 
-<<<<<<< HEAD
-=======
 void LogtailMonitor::DumpToLocal(const sls_logs::LogGroup& logGroup) {
     string dumpStr = "\n####logtail status####\n";
     for (int32_t logIdx = 0; logIdx < logGroup.logs_size(); ++logIdx) {
@@ -508,7 +491,6 @@ void LogtailMonitor::DumpToLocal(const sls_logs::LogGroup& logGroup) {
     LOG_INFO(gMonitorLogger, ("\n", dumpStr));
 }
 
->>>>>>> 9876b546 (1)
 bool LogtailMonitor::DumpMonitorInfo(time_t monitorTime) {
     string path = GetAgentLogDir() + GetMonitorInfoFileName();
     ofstream outfile(path.c_str(), ofstream::app);
@@ -774,8 +756,6 @@ void LoongCollectorMonitor::Init() {
 void LoongCollectorMonitor::Stop() {
     SelfMonitorServer::GetInstance()->Stop();
     LOG_INFO(sLogger, ("LoongCollector monitor", "stopped successfully"));
-<<<<<<< HEAD
-=======
 
 }
 
@@ -824,7 +804,6 @@ const string LoongCollectorMonitor::GetInnerSelfMonitorMetricPipeline() {
     )";
 #endif
     return pipeline;
->>>>>>> 9876b546 (1)
 }
 
 } // namespace logtail

@@ -21,15 +21,8 @@
 #include <future>
 #include <memory>
 #include <mutex>
-<<<<<<< HEAD
-#include <optional>
 #include <string>
 #include <unordered_map>
-#include <vector>
-=======
-#include <string>
-#include <unordered_map>
->>>>>>> 9876b546 (1)
 
 #include "sdk/Client.h"
 
@@ -39,15 +32,6 @@ class SLSClientManager {
 public:
     enum class EndpointSourceType { LOCAL, REMOTE };
     enum class EndpointSwitchPolicy { DESIGNATED_FIRST, DESIGNATED_LOCKED };
-<<<<<<< HEAD
-    enum class AuthType { ANONYMOUS, AK };
-
-    virtual ~SLSClientManager() = default;
-    SLSClientManager(const SLSClientManager&) = delete;
-    SLSClientManager& operator=(const SLSClientManager&) = delete;
-
-    static SLSClientManager* GetInstance();
-=======
 
     SLSClientManager(const SLSClientManager&) = delete;
     SLSClientManager& operator=(const SLSClientManager&) = delete;
@@ -56,16 +40,11 @@ public:
         static SLSClientManager instance;
         return &instance;
     }
->>>>>>> 9876b546 (1)
 
     void Init();
     void Stop();
 
     EndpointSwitchPolicy GetServerSwitchPolicy() const { return mDataServerSwitchPolicy; }
-<<<<<<< HEAD
-    const std::string& GetUserAgent() const { return mUserAgent; }
-=======
->>>>>>> 9876b546 (1)
 
     void IncreaseAliuidReferenceCntForRegion(const std::string& region, const std::string& aliuid);
     void DecreaseAliuidReferenceCntForRegion(const std::string& region, const std::string& aliuid);
@@ -73,12 +52,6 @@ public:
     sdk::Client* GetClient(const std::string& region, const std::string& aliuid, bool createIfNotFound = true);
     bool ResetClientEndpoint(const std::string& aliuid, const std::string& region, time_t curTime);
     void CleanTimeoutClient();
-<<<<<<< HEAD
-    virtual bool
-    GetAccessKey(const std::string& aliuid, AuthType& type, std::string& accessKeyId, std::string& accessKeySecret);
-    virtual void UpdateAccessKeyStatus(const std::string& aliuid, bool success) {}
-=======
->>>>>>> 9876b546 (1)
 
     void AddEndpointEntry(const std::string& region,
                           const std::string& endpoint,
@@ -95,17 +68,6 @@ public:
     std::string GetRegionFromEndpoint(const std::string& endpoint); // for backward compatibility
     bool HasNetworkAvailable(); // TODO: remove this function
 
-<<<<<<< HEAD
-protected:
-    SLSClientManager() = default;
-
-    virtual std::string GetRunningEnvironment();
-    bool TryCurlEndpoint(const std::string& endpoint);
-
-    std::string mUserAgent;
-
-=======
->>>>>>> 9876b546 (1)
 private:
     enum class EndpointStatus { STATUS_OK_WITH_IP, STATUS_OK_WITH_ENDPOINT, STATUS_ERROR };
 
@@ -149,13 +111,9 @@ private:
         }
     };
 
-<<<<<<< HEAD
-    virtual void GenerateUserAgent();
-=======
     SLSClientManager() = default;
     ~SLSClientManager() = default;
 
->>>>>>> 9876b546 (1)
     void InitEndpointSwitchPolicy();
     std::vector<std::string> GetRegionAliuids(const std::string& region);
 

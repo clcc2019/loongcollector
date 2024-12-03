@@ -15,14 +15,6 @@
 package helper
 
 type ConvertConfig struct {
-<<<<<<< HEAD
-	TagFieldsRename      map[string]string // Rename one or more fields from tags.
-	ProtocolFieldsRename map[string]string // Rename one or more fields, The protocol field options can only be: contents, tags, time
-	Separator            string            // Convert separator
-	Protocol             string            // Convert protocol
-	Encoding             string            // Convert encoding
-	IgnoreUnExpectedData bool              // IgnoreUnExpectedData will skip on unexpected data if set to true, or will return error and stop processing the whole batch data if set to false
-=======
 	TagFieldsRename         map[string]string      // Rename one or more fields from tags.
 	ProtocolFieldsRename    map[string]string      // Rename one or more fields, The protocol field options can only be: contents, tags, time
 	Separator               string                 // Convert separator
@@ -31,5 +23,4 @@ type ConvertConfig struct {
 	IgnoreUnExpectedData    bool                   // IgnoreUnExpectedData will skip on unexpected data if set to true, or will return error and stop processing the whole batch data if set to false
 	ExternalKeyVal          map[string]interface{} // 外部键值对配置
 	ExternalOverwritePolicy int                    // 外部键值对覆盖策略
->>>>>>> 9876b546 (1)
 }

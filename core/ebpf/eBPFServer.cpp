@@ -25,11 +25,7 @@
 #include "ebpf/include/export.h"
 #include "common/LogtailCommonFlags.h"
 #include "common/MachineInfoUtil.h"
-<<<<<<< HEAD
-#include "monitor/metric_models/ReentrantMetricsRecord.h"
-=======
 #include "monitor/PluginMetricManager.h"
->>>>>>> 9876b546 (1)
 #include "common/Lock.h"
 
 DEFINE_FLAG_INT64(kernel_min_version_for_ebpf,

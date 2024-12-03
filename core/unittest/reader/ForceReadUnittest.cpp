@@ -19,28 +19,16 @@
 #include <memory>
 #include <string>
 
-<<<<<<< HEAD
-=======
 #include "constants/Constants.h"
->>>>>>> 9876b546 (1)
 #include "common/FileSystemUtil.h"
 #include "common/Flags.h"
 #include "common/JsonUtil.h"
 #include "config/PipelineConfig.h"
-<<<<<<< HEAD
-#include "constants/Constants.h"
-#include "file_server/ConfigManager.h"
-#include "file_server/FileServer.h"
-#include "file_server/event/BlockEventManager.h"
-#include "file_server/event/Event.h"
-#include "file_server/event_handler/EventHandler.h"
-=======
 #include "file_server/ConfigManager.h"
 #include "file_server/event/BlockEventManager.h"
 #include "file_server/event/Event.h"
 #include "file_server/event_handler/EventHandler.h"
 #include "file_server/FileServer.h"
->>>>>>> 9876b546 (1)
 #include "logger/Logger.h"
 #include "pipeline/Pipeline.h"
 #include "pipeline/queue/ProcessQueueManager.h"
@@ -131,21 +119,7 @@ protected:
         ProcessQueueManager::GetInstance()->EnablePop(mConfigName);
     }
 
-<<<<<<< HEAD
-    void TearDown() override {
-        remove(utf8File.c_str());
-        for (auto iter = BlockedEventManager::GetInstance()->mEventMap.begin();
-             iter != BlockedEventManager::GetInstance()->mEventMap.end();
-             ++iter) {
-            if (iter->second.mEvent != nullptr) {
-                delete iter->second.mEvent;
-            }
-        }
-        BlockedEventManager::GetInstance()->mEventMap.clear();
-    }
-=======
     void TearDown() override { remove(utf8File.c_str()); }
->>>>>>> 9876b546 (1)
 
 private:
     std::unique_ptr<char[]> expectedContent;
@@ -371,11 +345,8 @@ void ForceReadUnittest::TestAddTimeoutEvent() {
         reader.InitReader(true, LogFileReader::BACKWARD_TO_BEGINNING);
         reader.CheckFileSignatureAndOffset(true);
         LogFileReader::BUFFER_SIZE = 10;
-<<<<<<< HEAD
-=======
         BlockedEventManager::GetInstance()->mEventMap.clear();
         APSARA_TEST_EQUAL_FATAL(BlockedEventManager::GetInstance()->mEventMap.size(), 0U);
->>>>>>> 9876b546 (1)
 
         auto pHanlder = make_unique<ModifyHandler>(mConfigName, mConfig);
         pHanlder->mReadFileTimeSlice = 0; // force one read for one event

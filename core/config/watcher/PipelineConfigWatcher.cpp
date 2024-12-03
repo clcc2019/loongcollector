@@ -18,13 +18,6 @@
 
 #include "common/FileSystemUtil.h"
 #include "config/ConfigUtil.h"
-<<<<<<< HEAD
-#include "config/common_provider/CommonConfigProvider.h"
-#ifdef __ENTERPRISE__
-#include "config/provider/EnterpriseConfigProvider.h"
-#endif
-=======
->>>>>>> 9876b546 (1)
 #include "logger/Logger.h"
 #include "monitor/Monitor.h"
 #include "pipeline/PipelineManager.h"
@@ -44,15 +37,9 @@ pair<PipelineConfigDiff, TaskConfigDiff> PipelineConfigWatcher::CheckConfigDiff(
     PipelineConfigDiff pDiff;
     TaskConfigDiff tDiff;
     unordered_set<string> configSet;
-<<<<<<< HEAD
-    // builtin pipeline configs
-    InsertBuiltInPipelines(pDiff, tDiff, configSet);
-    // file pipeline configs 
-=======
     // inner configs
     InsertInnerPipelines(pDiff, tDiff, configSet);
     // configs from file
->>>>>>> 9876b546 (1)
     InsertPipelines(pDiff, tDiff, configSet);
 
     for (const auto& name : mPipelineManager->GetAllConfigNames()) {
@@ -96,77 +83,6 @@ pair<PipelineConfigDiff, TaskConfigDiff> PipelineConfigWatcher::CheckConfigDiff(
     return make_pair(std::move(pDiff), std::move(tDiff));
 }
 
-<<<<<<< HEAD
-void PipelineConfigWatcher::InsertBuiltInPipelines(PipelineConfigDiff& pDiff,
-                                                 TaskConfigDiff& tDiff,
-                                                 unordered_set<string>& configSet) {
-#ifdef __ENTERPRISE__
-    const std::map<std::string, std::string>& builtInPipelines
-        = EnterpriseConfigProvider::GetInstance()->GetAllBuiltInPipelineConfigs();
-
-    for (const auto& pipeline : builtInPipelines) {
-        const string& pipelineName = pipeline.first;
-        const string& pipleineDetail = pipeline.second;
-        if (configSet.find(pipelineName) != configSet.end()) {
-            LOG_WARNING(sLogger,
-                        ("more than 1 config with the same name is found", "skip current config")("inner pipeline",
-                                                                                                  pipelineName));
-            continue;
-        }
-        configSet.insert(pipelineName);
-
-        string errorMsg;
-        auto iter = mInnerConfigMap.find(pipelineName);
-        if (iter == mInnerConfigMap.end()) {
-            mInnerConfigMap[pipelineName] = pipleineDetail;
-            unique_ptr<Json::Value> detail = make_unique<Json::Value>();
-            if (!ParseConfigDetail(pipleineDetail, ".json", *detail, errorMsg)) {
-                LOG_WARNING(sLogger,
-                            ("config format error", "skip current object")("error msg", errorMsg)("inner pipeline",
-                                                                                                  pipelineName));
-                continue;
-            }
-            if (!IsConfigEnabled(pipelineName, *detail)) {
-                LOG_INFO(sLogger, ("new config found and disabled", "skip current object")("config", pipelineName));
-                continue;
-            }
-            if (!CheckAddedConfig(pipelineName, std::move(detail), pDiff, tDiff)) {
-                continue;
-            }
-        } else if (pipleineDetail != iter->second) {
-            mInnerConfigMap[pipelineName] = pipleineDetail;
-            unique_ptr<Json::Value> detail = make_unique<Json::Value>();
-            if (!ParseConfigDetail(pipleineDetail, ".json", *detail, errorMsg)) {
-                LOG_WARNING(sLogger,
-                            ("config format error", "skip current object")("error msg", errorMsg)("inner pipeline",
-                                                                                                  pipelineName));
-                continue;
-            }
-            if (!IsConfigEnabled(pipelineName, *detail)) {
-                switch (GetConfigType(*detail)) {
-                    case ConfigType::Pipeline:
-                        if (mPipelineManager->FindConfigByName(pipelineName)) {
-                            pDiff.mRemoved.push_back(pipelineName);
-                            LOG_INFO(sLogger,
-                                     ("existing valid config modified and disabled",
-                                      "prepare to stop current running pipeline")("config", pipelineName));
-                        } else {
-                            LOG_INFO(sLogger,
-                                     ("existing invalid config modified and disabled",
-                                      "skip current object")("config", pipelineName));
-                        }
-                        break;
-                    case ConfigType::Task:
-                        if (mTaskPipelineManager->FindPipelineByName(pipelineName)) {
-                            tDiff.mRemoved.push_back(pipelineName);
-                            LOG_INFO(sLogger,
-                                     ("existing valid config modified and disabled",
-                                      "prepare to stop current running task")("config", pipelineName));
-                        } else {
-                            LOG_INFO(sLogger,
-                                     ("existing invalid config modified and disabled",
-                                      "skip current object")("config", pipelineName));
-=======
 void PipelineConfigWatcher::InsertInnerPipelines(PipelineConfigDiff& pDiff,
                                                  TaskConfigDiff& tDiff,
                                                  unordered_set<string>& configSet) {
@@ -236,29 +152,18 @@ void PipelineConfigWatcher::InsertInnerPipelines(PipelineConfigDiff& pDiff,
                             LOG_INFO(sLogger,
                                      ("existing invalid config modified and disabled",
                                       "skip current object")("config", pipeline.first));
->>>>>>> 9876b546 (1)
                         }
                         break;
                 }
                 continue;
             }
-<<<<<<< HEAD
-            if (!CheckModifiedConfig(pipelineName, std::move(detail), pDiff, tDiff)) {
-=======
             if (!CheckModifiedConfig(pipeline.first, std::move(detail), pDiff, tDiff)) {
->>>>>>> 9876b546 (1)
                 continue;
             }
         } else {
             LOG_DEBUG(sLogger, ("existing inner config unchanged", "skip current object"));
         }
     }
-<<<<<<< HEAD
-#else
-    return;
-#endif
-=======
->>>>>>> 9876b546 (1)
 }
 
 void PipelineConfigWatcher::InsertPipelines(PipelineConfigDiff& pDiff,

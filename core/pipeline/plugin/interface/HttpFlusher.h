@@ -27,11 +27,7 @@ class HttpFlusher : public Flusher {
 public:
     virtual ~HttpFlusher() = default;
 
-<<<<<<< HEAD
-    virtual bool BuildRequest(SenderQueueItem* item, std::unique_ptr<HttpSinkRequest>& req, bool* keepItem) const = 0;
-=======
     virtual std::unique_ptr<HttpSinkRequest> BuildRequest(SenderQueueItem* item) const = 0;
->>>>>>> 9876b546 (1)
     virtual void OnSendDone(const HttpResponse& response, SenderQueueItem* item) = 0;
 
     virtual SinkType GetSinkType() override { return SinkType::HTTP; }

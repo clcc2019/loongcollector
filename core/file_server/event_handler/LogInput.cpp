@@ -349,12 +349,6 @@ void LogInput::ProcessEvent(EventDispatcher* dispatcher, Event* ev) {
 }
 
 void LogInput::UpdateCriticalMetric(int32_t curTime) {
-<<<<<<< HEAD
-    mLastRunTime->Set(mLastReadEventTime.load());
-    LoongCollectorMonitor::GetInstance()->SetAgentOpenFdTotal(GloablFileDescriptorManager::GetInstance()->GetOpenedFilePtrSize());
-    mRegisterdHandlersTotal->Set(EventDispatcher::GetInstance()->GetHandlerCount());
-    mActiveReadersTotal->Set(CheckPointManager::Instance()->GetReaderCount());
-=======
     LogtailMonitor::GetInstance()->UpdateMetric("last_read_event_time",
                                                 GetTimeStamp(mLastReadEventTime, "%Y-%m-%d %H:%M:%S"));
     mLastRunTime->Set(mLastReadEventTime.load());
@@ -370,7 +364,6 @@ void LogInput::UpdateCriticalMetric(int32_t curTime) {
     LogtailMonitor::GetInstance()->UpdateMetric("reader_count", CheckPointManager::Instance()->GetReaderCount());
     mActiveReadersTotal->Set(CheckPointManager::Instance()->GetReaderCount());
     LogtailMonitor::GetInstance()->UpdateMetric("multi_config", AppConfig::GetInstance()->IsAcceptMultiConfig());
->>>>>>> 9876b546 (1)
     mEventProcessCount = 0;
 }
 

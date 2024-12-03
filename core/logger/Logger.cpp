@@ -414,8 +414,6 @@ void Logger::LoadAllDefaultConfigs(std::map<std::string, LoggerConfig>& loggerCf
     LoadDefaultConfig(loggerCfgs, sinkCfgs);
 
     loggerCfgs.insert({GetAgentLoggersPrefix(), LoggerConfig{"AsyncFileSink", level::info}});
-<<<<<<< HEAD
-=======
     loggerCfgs.insert({GetAgentLoggersPrefix() + "/status", LoggerConfig{"AsyncFileSinkStatus", level::info}});
 
     std::string dirPath = GetAgentSnapshotDir();
@@ -424,7 +422,6 @@ void Logger::LoadAllDefaultConfigs(std::map<std::string, LoggerConfig>& loggerCf
     }
     sinkCfgs.insert(
         {"AsyncFileSinkStatus", SinkConfig{"AsyncFile", 61, 1, 1, dirPath + PATH_SEPARATOR + GetAgentStatusLogName()}});
->>>>>>> 9876b546 (1)
 }
 
 void Logger::EnsureSnapshotDirExist(std::map<std::string, SinkConfig>& sinkCfgs) {

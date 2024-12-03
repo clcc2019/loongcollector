@@ -25,11 +25,7 @@
 #include "file_server/MultilineOptions.h"
 #include "file_server/reader/FileReaderOptions.h"
 #include "monitor/MetricManager.h"
-<<<<<<< HEAD
-#include "monitor/metric_models/ReentrantMetricsRecord.h"
-=======
 #include "monitor/PluginMetricManager.h"
->>>>>>> 9876b546 (1)
 #include "pipeline/PipelineContext.h"
 
 

@@ -20,13 +20,8 @@
 
 #include "Common.h"
 #include "CurlImp.h"
-<<<<<<< HEAD
-#include "protobuf/sls/sls_logs.pb.h"
-#include "runner/sink/http/HttpSinkRequest.h"
-=======
 #include "runner/sink/http/HttpSinkRequest.h"
 #include "protobuf/sls/sls_logs.pb.h"
->>>>>>> 9876b546 (1)
 
 namespace logtail {
 namespace sdk {
@@ -35,13 +30,6 @@ namespace sdk {
     public:
         /** Constructor needs at least three parameters.
          * @param LOGHost LOG service address, for example:http://cn-hangzhou.log.aliyuncs.com.
-<<<<<<< HEAD
-         * @param timeout Timeout time of one operation.
-         */
-        Client(const std::string& aliuid,
-               const std::string& slsHost,
-               int32_t timeout = LOG_REQUEST_TIMEOUT);
-=======
          * @param accessKeyId Aliyun AccessKeyId.
          * @param accessKey Aliyun AccessKey Secret.
          * @param timeout Timeout time of one operation.
@@ -63,7 +51,6 @@ namespace sdk {
                int32_t timeout = LOG_REQUEST_TIMEOUT,
                const std::string& source = "",
                const std::string& intf = "");
->>>>>>> 9876b546 (1)
         ~Client() throw();
 
         void SetPort(int32_t port);
@@ -73,8 +60,6 @@ namespace sdk {
 
         std::string GetHost(const std::string& project);
 
-<<<<<<< HEAD
-=======
         void SetUserAgent(const std::string& userAgent) { mUserAgent = userAgent; }
         void SetKeyProvider(const std::string& keyProvider) { mKeyProvider = keyProvider; }
 
@@ -82,22 +67,18 @@ namespace sdk {
         std::string GetAccessKey();
         void SetAccessKeyId(const std::string& accessKeyId);
         std::string GetAccessKeyId();
->>>>>>> 9876b546 (1)
         void SetSlsHost(const std::string& slsHost);
         std::string GetSlsHost();
         std::string GetRawSlsHost();
         std::string GetHostFieldSuffix();
         bool GetRawSlsHostFlag();
 
-<<<<<<< HEAD
-=======
         // @note not used
         const std::string& GetSecurityToken() { return mSecurityToken; }
         // @note not used
         void SetSecurityToken(const std::string& securityToken) { mSecurityToken = securityToken; }
         // @note not used
         void RemoveSecurityToken() { SetSecurityToken(""); }
->>>>>>> 9876b546 (1)
         void SetSlsHostUpdateTime(int32_t uptime) { mSlsHostUpdateTime = uptime; }
         int32_t GetSlsHostUpdateTime() { return mSlsHostUpdateTime; }
 
@@ -254,14 +235,6 @@ namespace sdk {
         int32_t mSlsRealIpUpdateTime;
         std::string mRawSlsHost;
         std::string mSlsHost;
-<<<<<<< HEAD
-        int32_t mTimeout;
-        std::string mHostFieldSuffix;
-        bool mIsHostRawIp;
-        int32_t mPort;
-        bool mUsingHTTPS;
-        std::string mAliuid;
-=======
         std::string mAccessKeyId;
         std::string mAccessKey;
         std::string mSecurityToken;
@@ -274,7 +247,6 @@ namespace sdk {
         std::string mInterface;
         int32_t mPort;
         bool mUsingHTTPS;
->>>>>>> 9876b546 (1)
 
         SpinLock mSpinLock;
 

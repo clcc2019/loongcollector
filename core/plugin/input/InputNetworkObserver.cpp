@@ -18,11 +18,7 @@
 #include "ebpf/eBPFServer.h"
 #include "ebpf/config.h"
 #include "logger/Logger.h"
-<<<<<<< HEAD
-#include "monitor/metric_models/ReentrantMetricsRecord.h"
-=======
 #include "monitor/PluginMetricManager.h"
->>>>>>> 9876b546 (1)
 
 using namespace std;
 

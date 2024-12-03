@@ -20,11 +20,7 @@ public:
 
     std::chrono::steady_clock::time_point GetNextExecTime();
 
-<<<<<<< HEAD
-    void SetFirstExecTime(std::chrono::steady_clock::time_point firstExecTime,std::chrono::system_clock::time_point firstScrapeTime);
-=======
     void SetFirstExecTime(std::chrono::steady_clock::time_point firstExecTime);
->>>>>>> 9876b546 (1)
     void DelayExecTime(uint64_t delaySeconds);
     virtual void Cancel();
 
@@ -33,14 +29,6 @@ public:
 protected:
     bool IsCancelled();
 
-<<<<<<< HEAD
-    // for scrape monitor
-    std::chrono::system_clock::time_point mFirstScrapeTime;
-    std::chrono::system_clock::time_point mLatestScrapeTime;
-
-    // for scheduler
-=======
->>>>>>> 9876b546 (1)
     std::chrono::steady_clock::time_point mFirstExecTime;
     std::chrono::steady_clock::time_point mLatestExecTime;
     int64_t mExecCount = 0;
