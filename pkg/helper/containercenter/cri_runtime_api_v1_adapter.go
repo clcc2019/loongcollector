@@ -122,6 +122,14 @@ func (a *RuntimeServiceV1Adapter) ContainerStatus(ctx context.Context, container
 			}
 		}
 		status.LogPath = rawStatus.Status.LogPath
+
+		// v2 新字段：尝试从 Info 中解析资源信息
+		if rawStatus.Info != nil {
+			if _, ok := rawStatus.Info["resources"]; ok {
+				// 这里可以解析 resources 信息，但 v1 中可能不包含这些字段
+				// 暂时留空，由上层调用者处理
+			}
+		}
 	}
 
 	return &CriContainerStatusResponse{
