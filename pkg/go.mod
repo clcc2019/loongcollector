@@ -8,7 +8,7 @@ require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/cespare/xxhash/v2 v2.2.0
 	github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
-	github.com/containerd/containerd v1.6.8
+	github.com/containerd/containerd v1.7.0
 	github.com/docker/docker v20.10.22+incompatible
 	github.com/go-kit/kit v0.12.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -34,11 +34,11 @@ require (
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.31.0
-	k8s.io/api v0.24.0
-	k8s.io/apimachinery v0.24.0
-	k8s.io/client-go v0.24.0
-	k8s.io/cri-api v0.23.1
-	sigs.k8s.io/controller-runtime v0.12.1
+	k8s.io/api v0.28.0
+	k8s.io/apimachinery v0.28.0
+	k8s.io/client-go v0.28.0
+	k8s.io/cri-api v0.28.0
+	sigs.k8s.io/controller-runtime v0.16.0
 )
 
 require (

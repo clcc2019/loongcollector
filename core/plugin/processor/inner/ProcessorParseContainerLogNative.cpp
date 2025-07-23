@@ -110,6 +110,19 @@ bool ProcessorParseContainerLogNative::Init(const Json::Value& config) {
                               mContext->GetRegion());
     }
 
+    // SkipCorruptedLogs
+    if (!GetOptionalBoolParam(config, "SkipCorruptedLogs", mSkipCorruptedLogs, errorMsg)) {
+        PARAM_WARNING_DEFAULT(mContext->GetLogger(),
+                              mContext->GetAlarm(),
+                              errorMsg,
+                              mSkipCorruptedLogs,
+                              sName,
+                              mContext->GetConfigName(),
+                              mContext->GetProjectName(),
+                              mContext->GetLogstoreName(),
+                              mContext->GetRegion());
+    }
+
     mOutFailedEventsTotal = GetMetricsRecordRef().CreateCounter(METRIC_PLUGIN_OUT_FAILED_EVENTS_TOTAL);
     mParseStdoutTotal = GetMetricsRecordRef().CreateCounter(METRIC_PLUGIN_PARSE_STDOUT_TOTAL);
     mParseStderrTotal = GetMetricsRecordRef().CreateCounter(METRIC_PLUGIN_PARSE_STDERR_TOTAL);
@@ -178,24 +191,82 @@ bool ProcessorParseContainerLogNative::ParseContainerdTextLogLine(LogEvent& sour
                                                                   PipelineEventGroup& logGroup) {
     StringView contentValue = sourceEvent.GetContent(mSourceKey);
 
+    // Check for corrupted or empty log data
+    if (contentValue.empty()) {
+        errorMsg = "log line is empty";
+        return mKeepingSourceWhenParseFail;
+    }
+
+    // Check for suspicious patterns that indicate corrupted data
+    size_t backslashCount = 0;
+    for (char c : contentValue) {
+        if (c == '\\') {
+            backslashCount++;
+        }
+    }
+    
+    // If more than 50% of the content is backslashes, consider it corrupted
+    if (backslashCount > contentValue.size() / 2) {
+        // Try to clean the corrupted data
+        StringView cleanedData = CleanCorruptedLogData(contentValue);
+        if (!cleanedData.empty()) {
+            // Use the cleaned data for parsing
+            contentValue = cleanedData;
+            // Recalculate backslash count for cleaned data
+            backslashCount = 0;
+            for (char c : contentValue) {
+                if (c == '\\') {
+                    backslashCount++;
+                }
+            }
+            // If still too many backslashes, give up
+            if (backslashCount > contentValue.size() / 2) {
+                std::ostringstream errorMsgStream;
+                errorMsgStream << "log line appears to be corrupted even after cleaning (high backslash ratio: " 
+                               << backslashCount << "/" << contentValue.size() << ")"
+                               << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
+                errorMsg = errorMsgStream.str();
+                return mSkipCorruptedLogs ? false : mKeepingSourceWhenParseFail;
+            }
+        } else {
+            std::ostringstream errorMsgStream;
+            errorMsgStream << "log line appears to be corrupted (high backslash ratio: " 
+                           << backslashCount << "/" << contentValue.size() << ")"
+                           << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
+            errorMsg = errorMsgStream.str();
+            return mSkipCorruptedLogs ? false : mKeepingSourceWhenParseFail;
+        }
+    }
+
     // 寻找第一个分隔符位置 时间 _time_
     StringView timeValue;
     const char* pch1 = std::find(contentValue.begin(), contentValue.end(), CONTAINERD_DELIMITER);
     if (pch1 == contentValue.end()) {
         std::ostringstream errorMsgStream;
-        errorMsgStream << "time field cannot be found in log line."
+        errorMsgStream << "time field cannot be found in log line (no space delimiter found)"
+                       << "\tlog length:" << contentValue.size()
                        << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
         errorMsg = errorMsgStream.str();
         return mKeepingSourceWhenParseFail;
     }
     timeValue = StringView(contentValue.data(), pch1 - contentValue.data());
 
+    // Validate time format (basic check)
+    if (timeValue.size() < 10 || timeValue[4] != '-' || timeValue[7] != '-') {
+        std::ostringstream errorMsgStream;
+        errorMsgStream << "time field format appears invalid"
+                       << "\ttime value:" << timeValue.to_string()
+                       << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
+        errorMsg = errorMsgStream.str();
+        return mKeepingSourceWhenParseFail;
+    }
+
     // 寻找第二个分隔符位置 容器标签 _source_
     StringView sourceValue;
     const char* pch2 = std::find(pch1 + 1, contentValue.end(), CONTAINERD_DELIMITER);
     if (pch2 == contentValue.end()) {
         std::ostringstream errorMsgStream;
-        errorMsgStream << "source field cannot be found in log line."
+        errorMsgStream << "source field cannot be found in log line (no second space delimiter found)"
                        << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
         errorMsg = errorMsgStream.str();
         return mKeepingSourceWhenParseFail;
@@ -204,8 +275,7 @@ bool ProcessorParseContainerLogNative::ParseContainerdTextLogLine(LogEvent& sour
 
     if (sourceValue != "stdout" && sourceValue != "stderr") {
         std::ostringstream errorMsgStream;
-        errorMsgStream << "source field not valid"
-                       << "\tsource:" << sourceValue.to_string()
+        errorMsgStream << "source field not valid (expected 'stdout' or 'stderr', got '" << sourceValue.to_string() << "')"
                        << "\tfirst 1KB log:" << contentValue.substr(0, 1024).to_string();
         errorMsg = errorMsgStream.str();
         return mKeepingSourceWhenParseFail;
@@ -536,6 +606,27 @@ void ProcessorParseContainerLogNative::ResetContainerdTextLog(
 
 bool ProcessorParseContainerLogNative::IsSupportedEvent(const PipelineEventPtr& e) const {
     return e.Is<LogEvent>();
+}
+
+StringView ProcessorParseContainerLogNative::CleanCorruptedLogData(StringView originalData) {
+    // If the data is mostly backslashes, try to find any meaningful content
+    if (originalData.empty()) {
+        return originalData;
+    }
+    
+    // Look for the first non-backslash character
+    size_t startPos = 0;
+    while (startPos < originalData.size() && originalData[startPos] == '\\') {
+        startPos++;
+    }
+    
+    // If we found some non-backslash content, return it
+    if (startPos < originalData.size()) {
+        return StringView(originalData.data() + startPos, originalData.size() - startPos);
+    }
+    
+    // If it's all backslashes, return empty
+    return StringView();
 }
 
 } // namespace logtail

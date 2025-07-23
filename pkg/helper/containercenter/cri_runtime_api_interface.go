@@ -31,6 +31,11 @@ const (
 	ContainerStateContainerRunning CriContainerState = 1
 	ContainerStateContainerExited  CriContainerState = 2
 	ContainerStateContainerUnknown CriContainerState = 3
+	// v2 新增状态
+	ContainerStateContainerCreated2 CriContainerState = 4
+	ContainerStateContainerRunning2 CriContainerState = 5
+	ContainerStateContainerExited2  CriContainerState = 6
+	ContainerStateContainerUnknown2 CriContainerState = 7
 )
 
 type CriMountPropagation int32
@@ -65,6 +70,70 @@ type CriImageSpec struct {
 	Annotations map[string]string
 }
 
+// v2 新增：资源限制
+type CriLinuxContainerResources struct {
+	CPUPeriod              int64             `json:"cpu_period,omitempty"`
+	CPUQuota               int64             `json:"cpu_quota,omitempty"`
+	CPUShares              int64             `json:"cpu_shares,omitempty"`
+	MemoryLimitInBytes     int64             `json:"memory_limit_in_bytes,omitempty"`
+	OomScoreAdj            int64             `json:"oom_score_adj,omitempty"`
+	CpusetCpus             string            `json:"cpuset_cpus,omitempty"`
+	CpusetMems             string            `json:"cpuset_mems,omitempty"`
+	HugepageLimits         map[string]uint64 `json:"hugepage_limits,omitempty"`
+	Unified                map[string]string `json:"unified,omitempty"`
+	MemorySwapLimitInBytes int64             `json:"memory_swap_limit_in_bytes,omitempty"`
+}
+
+// v2 新增：容器安全上下文
+type CriLinuxContainerSecurityContext struct {
+	Capabilities       *CriCapability      `json:"capabilities,omitempty"`
+	Privileged         bool                `json:"privileged,omitempty"`
+	NamespaceOptions   *CriNamespaceOption `json:"namespace_options,omitempty"`
+	SelinuxOptions     *CriSELinuxOption   `json:"selinux_options,omitempty"`
+	RunAsUser          *CriInt64Value      `json:"run_as_user,omitempty"`
+	RunAsGroup         *CriInt64Value      `json:"run_as_group,omitempty"`
+	RunAsUsername      string              `json:"run_as_username,omitempty"`
+	ReadonlyRootfs     bool                `json:"readonly_rootfs,omitempty"`
+	SupplementalGroups []int64             `json:"supplemental_groups,omitempty"`
+	ApparmorProfile    string              `json:"apparmor_profile,omitempty"`
+	SeccompProfilePath string              `json:"seccomp_profile_path,omitempty"`
+	NoNewPrivs         bool                `json:"no_new_privs,omitempty"`
+	MaskedPaths        []string            `json:"masked_paths,omitempty"`
+	ReadonlyPaths      []string            `json:"readonly_paths,omitempty"`
+}
+
+type CriCapability struct {
+	AddCapabilities  []string `json:"add_capabilities,omitempty"`
+	DropCapabilities []string `json:"drop_capabilities,omitempty"`
+}
+
+type CriNamespaceOption struct {
+	Network  CriNamespaceMode `json:"network,omitempty"`
+	Pid      CriNamespaceMode `json:"pid,omitempty"`
+	Ipc      CriNamespaceMode `json:"ipc,omitempty"`
+	TargetId string           `json:"target_id,omitempty"`
+}
+
+type CriNamespaceMode int32
+
+const (
+	NamespaceModePod       CriNamespaceMode = 0
+	NamespaceModeContainer CriNamespaceMode = 1
+	NamespaceModeNode      CriNamespaceMode = 2
+	NamespaceModeTarget    CriNamespaceMode = 3
+)
+
+type CriSELinuxOption struct {
+	User  string `json:"user,omitempty"`
+	Role  string `json:"role,omitempty"`
+	Type  string `json:"type,omitempty"`
+	Level string `json:"level,omitempty"`
+}
+
+type CriInt64Value struct {
+	Value int64 `json:"value,omitempty"`
+}
+
 type CriContainer struct {
 	ID           string
 	PodSandboxID string
@@ -75,6 +144,9 @@ type CriContainer struct {
 	CreatedAt    int64
 	Labels       map[string]string
 	Annotations  map[string]string
+	// v2 新增字段
+	Resources       *CriLinuxContainerResources
+	SecurityContext *CriLinuxContainerSecurityContext
 }
 
 type CriListContainersResponse struct {
@@ -105,6 +177,9 @@ type CriContainerStatus struct {
 	Annotations map[string]string
 	Mounts      []*CriMount
 	LogPath     string
+	// v2 新增字段
+	Resources       *CriLinuxContainerResources
+	SecurityContext *CriLinuxContainerSecurityContext
 }
 
 type CriContainerStatusResponse struct {
@@ -183,17 +258,10 @@ func NewRuntimeServiceClient(contextTimeout time.Duration, grpcMaxCallRecvMsgSiz
 	client := &RuntimeServiceClient{
 		conn: conn,
 	}
-	// Try v1 first
+	// Try v1
 	client.service = newCRIRuntimeServiceV1Adapter(conn)
 	if client.getVersion(ctx) == nil {
 		logger.Info(ctx, "Init cri client v1 success, cri info", client.info)
-		return client, nil
-	}
-
-	// Fallback to v1alpha2
-	client.service = newCRIRuntimeServiceV1Alpha2Adapter(conn)
-	if client.getVersion(ctx) == nil {
-		logger.Info(ctx, "Init cri client v1alpha2 success, cri info", client.info)
 		return client, nil
 	}
 
