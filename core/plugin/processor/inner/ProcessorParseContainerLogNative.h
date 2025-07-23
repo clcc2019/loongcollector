@@ -60,6 +60,7 @@ public:
     bool mIgnoringStderr = false;
     bool mIgnoreParseWarning = false;
     bool mKeepingSourceWhenParseFail = true;
+    bool mSkipCorruptedLogs = false;  // New option to skip corrupted logs
 
 protected:
     bool IsSupportedEvent(const PipelineEventPtr& e) const override;
@@ -73,6 +74,7 @@ private:
         StringView time, StringView source, StringView content, bool isPartialLog, LogEvent& sourceEvent);
     bool ParseContainerdTextLogLine(LogEvent& sourceEvent, std::string& errorMsg, PipelineEventGroup& logGroup);
     bool ParseDockerJsonLogLine(LogEvent& sourceEvent, std::string& errorMsg);
+    StringView CleanCorruptedLogData(StringView originalData);  // New method to clean corrupted data
 
     CounterPtr mOutFailedEventsTotal; // 解析失败条数
     CounterPtr mParseStdoutTotal;

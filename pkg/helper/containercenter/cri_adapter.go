@@ -25,12 +25,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/containerd/containerd"
-	containerdcriserver "github.com/containerd/containerd/pkg/cri/server"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 
-	"github.com/alibaba/ilogtail/pkg/flags"
 	"github.com/alibaba/ilogtail/pkg/logger"
 )
 
@@ -40,6 +37,45 @@ const (
 )
 
 var criRuntimeWrapper *CRIRuntimeWrapper
+
+// ContainerInfo represents container information from containerd
+type ContainerInfo struct {
+	Pid         int32                 `json:"pid"`
+	SandboxID   string                `json:"sandboxID"`
+	Snapshotter string                `json:"snapshotter"`
+	SnapshotKey string                `json:"snapshotKey"`
+	Config      *ContainerConfig      `json:"config"`
+	RuntimeSpec *ContainerRuntimeSpec `json:"runtimeSpec"`
+}
+
+// ContainerConfig represents container configuration
+type ContainerConfig struct {
+	Envs []ContainerEnv `json:"envs"`
+}
+
+// ContainerEnv represents environment variable
+type ContainerEnv struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// ContainerRuntimeSpec represents runtime specification
+type ContainerRuntimeSpec struct {
+	Process *ContainerProcess `json:"process"`
+	Mounts  []ContainerMount  `json:"mounts"`
+}
+
+// ContainerProcess represents process configuration
+type ContainerProcess struct {
+	Env []string `json:"env"`
+}
+
+// ContainerMount represents mount configuration
+type ContainerMount struct {
+	Source      string `json:"source"`
+	Destination string `json:"destination"`
+	Type        string `json:"type"`
+}
 
 // CRIRuntimeWrapper wrapper for containerd client
 type innerContainerInfo struct {
@@ -51,7 +87,7 @@ type innerContainerInfo struct {
 
 type CRIRuntimeWrapper struct {
 	containerCenter *ContainerCenter
-	nativeClient    *containerd.Client
+	nativeClient    interface{} // Changed from *containerd.Client to interface{} to avoid dependency
 	client          *RuntimeServiceClient
 	runtimeInfo     CriVersionInfo
 
@@ -91,19 +127,20 @@ func NewCRIRuntimeWrapper(containerCenter *ContainerCenter) (*CRIRuntimeWrapper,
 		return nil, err
 	}
 
-	var containerdClient *containerd.Client
-	if *flags.EnableContainerdUpperDirDetect {
-		containerdClient, err = containerd.New(containerdUnixSocket, containerd.WithDefaultNamespace("k8s.io"))
-		if err == nil {
-			ctx, cancel := getContextWithTimeout(defaultContextTimeout)
-			defer cancel()
-			_, err = containerdClient.Version(ctx)
-		}
-		if err != nil {
-			logger.Warning(context.Background(), "CONTAINERD_CLIENT_ALARM", "Connect containerd failed", err)
-			containerdClient = nil
-		}
-	}
+	var containerdClient interface{} // Changed from *containerd.Client to interface{}
+	// Temporarily disable containerd client to avoid dependency issues
+	// if *flags.EnableContainerdUpperDirDetect {
+	// 	containerdClient, err = containerd.New(containerdUnixSocket, containerd.WithDefaultNamespace("k8s.io"))
+	// 	if err == nil {
+	// 		ctx, cancel := getContextWithTimeout(defaultContextTimeout)
+	// 		defer cancel()
+	// 		_, err = containerdClient.Version(ctx)
+	// 	}
+	// 	if err != nil {
+	// 		logger.Warning(context.Background(), "CONTAINERD_CLIENT_ALARM", "Connect containerd failed", err)
+	// 		containerdClient = nil
+	// 	}
+	// }
 
 	return &CRIRuntimeWrapper{
 		containerCenter:        containerCenter,
@@ -127,7 +164,7 @@ func (cw *CRIRuntimeWrapper) createContainerInfo(containerID string) (detail *Do
 		return nil, "", ContainerStateContainerUnknown, err
 	}
 
-	var ci containerdcriserver.ContainerInfo
+	var ci ContainerInfo
 	foundInfo := false
 	if statusinfo := status.Info; statusinfo != nil {
 		if info, ok := statusinfo["info"]; ok {
@@ -231,6 +268,75 @@ func (cw *CRIRuntimeWrapper) createContainerInfo(containerID string) (detail *Do
 	dockerContainer.HostnamePath = hostnamePath
 	dockerContainer.HostsPath = hostsPath
 	formatContainerJSONPath(&dockerContainer)
+
+	// v2 新特性：解析资源限制信息
+	if status.Status.Resources != nil {
+		// 将 CRI 资源限制转换为 Docker 格式
+		if status.Status.Resources.MemoryLimitInBytes > 0 {
+			dockerContainer.HostConfig.Memory = status.Status.Resources.MemoryLimitInBytes
+		}
+		if status.Status.Resources.CPUQuota > 0 {
+			dockerContainer.HostConfig.CPUQuota = status.Status.Resources.CPUQuota
+		}
+		if status.Status.Resources.CPUPeriod > 0 {
+			dockerContainer.HostConfig.CPUPeriod = status.Status.Resources.CPUPeriod
+		}
+		if status.Status.Resources.CPUShares > 0 {
+			dockerContainer.HostConfig.CPUShares = status.Status.Resources.CPUShares
+		}
+		if status.Status.Resources.CpusetCpus != "" {
+			dockerContainer.HostConfig.CpusetCpus = status.Status.Resources.CpusetCpus
+		}
+		if status.Status.Resources.CpusetMems != "" {
+			dockerContainer.HostConfig.CpusetMems = status.Status.Resources.CpusetMems
+		}
+		if status.Status.Resources.OomScoreAdj != 0 {
+			dockerContainer.HostConfig.OomScoreAdj = int(status.Status.Resources.OomScoreAdj)
+		}
+	}
+
+	// v2 新特性：解析安全上下文信息
+	if status.Status.SecurityContext != nil {
+		if status.Status.SecurityContext.Privileged {
+			dockerContainer.HostConfig.Privileged = true
+		}
+		if status.Status.SecurityContext.ReadonlyRootfs {
+			dockerContainer.HostConfig.ReadonlyRootfs = true
+		}
+		if status.Status.SecurityContext.RunAsUser != nil {
+			dockerContainer.Config.User = fmt.Sprintf("%d", status.Status.SecurityContext.RunAsUser.Value)
+		}
+		if status.Status.SecurityContext.Capabilities != nil {
+			if len(status.Status.SecurityContext.Capabilities.AddCapabilities) > 0 {
+				dockerContainer.HostConfig.CapAdd = status.Status.SecurityContext.Capabilities.AddCapabilities
+			}
+			if len(status.Status.SecurityContext.Capabilities.DropCapabilities) > 0 {
+				dockerContainer.HostConfig.CapDrop = status.Status.SecurityContext.Capabilities.DropCapabilities
+			}
+		}
+	}
+
+	// 尝试从 Info 中解析额外的资源信息
+	if status.Info != nil {
+		if resourcesInfo, ok := status.Info["resources"]; ok {
+			// 解析 JSON 格式的资源信息
+			var resources map[string]interface{}
+			if err := json.Unmarshal([]byte(resourcesInfo), &resources); err == nil {
+				// 处理内存限制
+				if memoryLimit, ok := resources["memory_limit_in_bytes"].(float64); ok {
+					dockerContainer.HostConfig.Memory = int64(memoryLimit)
+				}
+				// 处理 CPU 限制
+				if cpuQuota, ok := resources["cpu_quota"].(float64); ok {
+					dockerContainer.HostConfig.CPUQuota = int64(cpuQuota)
+				}
+				if cpuPeriod, ok := resources["cpu_period"].(float64); ok {
+					dockerContainer.HostConfig.CPUPeriod = int64(cpuPeriod)
+				}
+			}
+		}
+	}
+
 	return cw.containerCenter.CreateInfoDetail(dockerContainer, envConfigPrefix, false), ci.SandboxID, state, nil
 }
 
@@ -463,8 +569,8 @@ func getContextWithTimeout(timeout time.Duration) (context.Context, context.Canc
 	return context.WithTimeout(context.Background(), timeout)
 }
 
-func parseContainerInfo(data string) (containerdcriserver.ContainerInfo, error) {
-	var ci containerdcriserver.ContainerInfo
+func parseContainerInfo(data string) (ContainerInfo, error) {
+	var ci ContainerInfo
 	err := json.Unmarshal([]byte(data), &ci)
 	return ci, err
 }
@@ -539,7 +645,7 @@ func (cw *CRIRuntimeWrapper) lookupContainerRootfsAbsDir(info types.ContainerJSO
 }
 
 func (cw *CRIRuntimeWrapper) getContainerUpperDir(containerid, snapshotter string) string {
-	// For Containerd
+	// For Containerd - temporarily disabled to avoid dependency issues
 
 	if cw.nativeClient == nil {
 		return ""
@@ -549,28 +655,29 @@ func (cw *CRIRuntimeWrapper) getContainerUpperDir(containerid, snapshotter strin
 		return dir
 	}
 
-	si := cw.nativeClient.SnapshotService(snapshotter)
-	ctx, cancel := getContextWithTimeout(defaultContextTimeout)
-	defer cancel()
-	mounts, err := si.Mounts(ctx, containerid)
-	if err != nil {
-		logger.Warning(context.Background(), "CONTAINERD_CLIENT_ALARM", "cannot get snapshot info, containerID", containerid, "errInfo", err)
-		return ""
-	}
-	for _, m := range mounts {
-		if len(m.Options) != 0 {
-			for _, i := range m.Options {
-				s := strings.Split(i, "=")
-				if s[0] == "upperdir" {
-					cw.rootfsLock.Lock()
-					cw.rootfsCache[containerid] = s[1]
-					cw.rootfsLock.Unlock()
-					return s[1]
-				}
-				continue
-			}
-		}
-	}
+	// Temporarily disabled containerd client usage
+	// si := cw.nativeClient.SnapshotService(snapshotter)
+	// ctx, cancel := getContextWithTimeout(defaultContextTimeout)
+	// defer cancel()
+	// mounts, err := si.Mounts(ctx, containerid)
+	// if err != nil {
+	// 	logger.Warning(context.Background(), "CONTAINERD_CLIENT_ALARM", "cannot get snapshot info, containerID", containerid, "errInfo", err)
+	// 	return ""
+	// }
+	// for _, m := range mounts {
+	// 	if len(m.Options) != 0 {
+	// 		for _, i := range m.Options {
+	// 			s := strings.Split(i, "=")
+	// 			if s[0] == "upperdir" {
+	// 				cw.rootfsLock.Lock()
+	// 				cw.rootfsCache[containerid] = s[1]
+	// 				cw.rootfsLock.Unlock()
+	// 				return s[1]
+	// 			}
+	// 			continue
+	// 		}
+	// 	}
+	// }
 	return ""
 }
 
