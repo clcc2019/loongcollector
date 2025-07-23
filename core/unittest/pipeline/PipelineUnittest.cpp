@@ -72,7 +72,6 @@ protected:
     unique_ptr<ProcessQueueItem> GenerateProcessItem(shared_ptr<CollectionPipeline> pipeline) const {
         PipelineEventGroup eventGroup(make_shared<SourceBuffer>());
         auto item = make_unique<ProcessQueueItem>(std::move(eventGroup), 0);
-        item->mPipeline = pipeline;
         return item;
     }
 
@@ -194,6 +193,35 @@ void PipelineUnittest::OnSuccessfulInit() const {
             ]
         }
     )";
+#if defined(_MSC_VER)
+    goPipelineWithInputStr = R"(
+        {
+            "global" : {
+                "EnableTimestampNanosecond": false,
+                "UsingOldContentTag": false,
+                "DefaultLogQueueSize" : 5,
+                "DefaultLogGroupQueueSize": 3
+            },
+            "inputs": [
+                {
+                    "type": "metric_container_info/2",
+                    "detail": {
+                        "CollectingContainersMeta": true,
+                        "LogPath": "C:\\home",
+                        "MaxDepth": 0,
+                        "FilePattern": "test.log"
+                    }
+                }
+            ],
+            "extensions": [
+                {
+                    "type": "ext_basicauth/6",
+                    "detail": {}
+                }
+            ]
+        }
+    )";
+#else
     goPipelineWithInputStr = R"(
         {
             "global" : {
@@ -221,6 +249,7 @@ void PipelineUnittest::OnSuccessfulInit() const {
             ]
         }
     )";
+#endif
     goPipelineWithoutInputStr = R"(
         {
             "global" : {
@@ -2606,6 +2635,28 @@ void PipelineUnittest::OnInputFileWithContainerDiscovery() const {
             ]
         }
     )";
+#if defined(_MSC_VER)
+    goPipelineWithInputStr = R"(
+        {
+            "global" : {
+                "EnableTimestampNanosecond": false,
+                "UsingOldContentTag": false,
+                "DefaultLogQueueSize" : 10
+            },
+            "inputs": [
+                {
+                    "type": "metric_container_info/2",
+                    "detail": {
+                        "CollectingContainersMeta": true,
+                        "LogPath": "C:\\home",
+                        "MaxDepth": 0,
+                        "FilePattern": "test.log"
+                    }
+                }
+            ]
+        }
+    )";
+#else
     goPipelineWithInputStr = R"(
         {
             "global" : {
@@ -2626,6 +2677,7 @@ void PipelineUnittest::OnInputFileWithContainerDiscovery() const {
             ]
         }
     )";
+#endif
     configJson.reset(new Json::Value());
     APSARA_TEST_TRUE(ParseJsonTable(configStr, *configJson, errorMsg));
     APSARA_TEST_TRUE(ParseJsonTable(goPipelineWithInputStr, goPipelineWithInput, errorMsg));
@@ -2667,6 +2719,29 @@ void PipelineUnittest::OnInputFileWithContainerDiscovery() const {
             ]
         }
     )";
+#if defined(_MSC_VER)
+    goPipelineWithInputStr = R"(
+        {
+            "global" : {
+                "EnableTimestampNanosecond": false,
+                "UsingOldContentTag": false,
+                "DefaultLogQueueSize" : 10,
+                "EnableProcessorTag": true
+            },
+            "inputs": [
+                {
+                    "type": "metric_container_info/2",
+                    "detail": {
+                        "CollectingContainersMeta": true,
+                        "LogPath": "C:\\home",
+                        "MaxDepth": 0,
+                        "FilePattern": "test.log"
+                    }
+                }
+            ]
+        }
+    )";
+#else
     goPipelineWithInputStr = R"(
         {
             "global" : {
@@ -2688,6 +2763,7 @@ void PipelineUnittest::OnInputFileWithContainerDiscovery() const {
             ]
         }
     )";
+#endif
     goPipelineWithoutInputStr = R"(
         {
             "global" : {
@@ -2747,7 +2823,7 @@ void PipelineUnittest::TestProcess() const {
     processor->Init(Json::Value(), ctx);
     pipeline.mProcessorLine.emplace_back(std::move(processor));
 
-    WriteMetrics::GetInstance()->PrepareMetricsRecordRef(
+    WriteMetrics::GetInstance()->CreateMetricsRecordRef(
         pipeline.mMetricsRecordRef, MetricCategory::METRIC_CATEGORY_UNKNOWN, {});
     pipeline.mProcessorsInEventsTotal
         = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_PROCESSORS_IN_EVENTS_TOTAL);
@@ -2757,6 +2833,7 @@ void PipelineUnittest::TestProcess() const {
         = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_PROCESSORS_IN_SIZE_BYTES);
     pipeline.mProcessorsTotalProcessTimeMs
         = pipeline.mMetricsRecordRef.CreateTimeCounter(METRIC_PIPELINE_PROCESSORS_TOTAL_PROCESS_TIME_MS);
+    WriteMetrics::GetInstance()->CommitMetricsRecordRef(pipeline.mMetricsRecordRef);
 
     vector<PipelineEventGroup> groups;
     groups.emplace_back(make_shared<SourceBuffer>());
@@ -2796,7 +2873,7 @@ void PipelineUnittest::TestSend() const {
         configs.emplace_back(1, nullptr);
         pipeline.mRouter.Init(configs, ctx);
 
-        WriteMetrics::GetInstance()->PrepareMetricsRecordRef(
+        WriteMetrics::GetInstance()->CreateMetricsRecordRef(
             pipeline.mMetricsRecordRef, MetricCategory::METRIC_CATEGORY_UNKNOWN, {});
         pipeline.mFlushersInGroupsTotal
             = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_FLUSHERS_IN_EVENT_GROUPS_TOTAL);
@@ -2806,6 +2883,7 @@ void PipelineUnittest::TestSend() const {
             = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_FLUSHERS_IN_SIZE_BYTES);
         pipeline.mFlushersTotalPackageTimeMs
             = pipeline.mMetricsRecordRef.CreateTimeCounter(METRIC_PIPELINE_FLUSHERS_TOTAL_PACKAGE_TIME_MS);
+        WriteMetrics::GetInstance()->CommitMetricsRecordRef(pipeline.mMetricsRecordRef);
         {
             // all valid
             vector<PipelineEventGroup> group;
@@ -2863,7 +2941,7 @@ void PipelineUnittest::TestSend() const {
         configs.emplace_back(configJson.size(), nullptr);
         pipeline.mRouter.Init(configs, ctx);
 
-        WriteMetrics::GetInstance()->PrepareMetricsRecordRef(
+        WriteMetrics::GetInstance()->CreateMetricsRecordRef(
             pipeline.mMetricsRecordRef, MetricCategory::METRIC_CATEGORY_UNKNOWN, {});
         pipeline.mFlushersInGroupsTotal
             = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_FLUSHERS_IN_EVENT_GROUPS_TOTAL);
@@ -2873,6 +2951,7 @@ void PipelineUnittest::TestSend() const {
             = pipeline.mMetricsRecordRef.CreateCounter(METRIC_PIPELINE_FLUSHERS_IN_SIZE_BYTES);
         pipeline.mFlushersTotalPackageTimeMs
             = pipeline.mMetricsRecordRef.CreateTimeCounter(METRIC_PIPELINE_FLUSHERS_TOTAL_PACKAGE_TIME_MS);
+        WriteMetrics::GetInstance()->CommitMetricsRecordRef(pipeline.mMetricsRecordRef);
 
         {
             vector<PipelineEventGroup> group;

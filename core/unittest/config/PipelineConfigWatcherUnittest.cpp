@@ -22,11 +22,17 @@
 #include "plugin/PluginRegistry.h"
 #include "unittest/Unittest.h"
 #include "unittest/config/PipelineManagerMock.h"
+#include "unittest/plugin/PluginMock.h"
 #ifdef __ENTERPRISE__
 #include "config/provider/EnterpriseConfigProvider.h"
 #endif
 
 using namespace std;
+
+DECLARE_FLAG_BOOL(enable_ebpf_network_secure);
+DECLARE_FLAG_BOOL(enable_ebpf_file_secure);
+DECLARE_FLAG_BOOL(enable_ebpf_process_secure);
+DECLARE_FLAG_BOOL(enable_ebpf_network_observer);
 
 namespace logtail {
 
@@ -39,7 +45,12 @@ public:
 
 protected:
     static void SetUpTestCase() {
+        FLAGS_enable_ebpf_network_observer = true;
+        FLAGS_enable_ebpf_process_secure = true;
+        FLAGS_enable_ebpf_file_secure = true;
+        FLAGS_enable_ebpf_network_secure = true;
         PluginRegistry::GetInstance()->LoadPlugins();
+        LoadPluginMock();
         PipelineConfigWatcher::GetInstance()->SetPipelineManager(PipelineManagerMock::GetInstance());
     }
     static void TearDownTestCase() { PluginRegistry::GetInstance()->UnloadPlugins(); }
@@ -72,7 +83,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_network_observer"
+                    "Type": "input_singleton_mock_1"
                 }
             ],
             "flushers": [
@@ -89,7 +100,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_network_observer"
+                    "Type": "input_singleton_mock_1"
                 }
             ],
             "flushers": [
@@ -106,7 +117,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_network_observer"
+                    "Type": "input_singleton_mock_1"
                 }
             ],
             "processors": [],
@@ -124,7 +135,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_network_observer"
+                    "Type": "input_singleton_mock_1"
                 }
             ],
             "processors": [],
@@ -142,7 +153,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_process_security"
+                    "Type": "input_singleton_mock_2"
                 }
             ],
             "flushers": [
@@ -159,7 +170,7 @@ private:
             "valid": true,
             "inputs": [
                 {
-                    "Type": "input_process_security"
+                    "Type": "input_singleton_mock_2"
                 }
             ],
             "processors": [],
@@ -338,8 +349,9 @@ void PipelineConfigWatcherUnittest::TestLoadAddedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
-        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[0]);
+        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
     }
     { // case: added -> removed, first < second
@@ -367,8 +379,9 @@ void PipelineConfigWatcherUnittest::TestLoadAddedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
-        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[0]);
+        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
     }
     {
@@ -706,6 +719,7 @@ void PipelineConfigWatcherUnittest::TestLoadModifiedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
         APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
@@ -739,8 +753,9 @@ void PipelineConfigWatcherUnittest::TestLoadModifiedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
-        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[0]);
+        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
     }
     {
@@ -893,10 +908,6 @@ void PipelineConfigWatcherUnittest::TestLoadRemovedSingletonConfig() {
         fout << greaterPriorityConfig;
         fout.close();
         auto diff = PipelineConfigWatcher::GetInstance()->CheckConfigDiff();
-        size_t builtinPipelineCnt = 0;
-#ifdef __ENTERPRISE__
-        builtinPipelineCnt += EnterpriseConfigProvider::GetInstance()->GetAllBuiltInPipelineConfigs().size();
-#endif
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt,
                                 PipelineManagerMock::GetInstance()->GetAllConfigNames().size());
@@ -1183,10 +1194,6 @@ void PipelineConfigWatcherUnittest::TestLoadUnchangedSingletonConfig() {
         fout << greaterPriorityConfig;
         fout.close();
         auto diff = PipelineConfigWatcher::GetInstance()->CheckConfigDiff();
-        size_t builtinPipelineCnt = 0;
-#ifdef __ENTERPRISE__
-        builtinPipelineCnt += EnterpriseConfigProvider::GetInstance()->GetAllBuiltInPipelineConfigs().size();
-#endif
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt,
                                 PipelineManagerMock::GetInstance()->GetAllConfigNames().size());
@@ -1412,6 +1419,7 @@ void PipelineConfigWatcherUnittest::TestLoadUnchangedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
         APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
@@ -1441,8 +1449,9 @@ void PipelineConfigWatcherUnittest::TestLoadUnchangedSingletonConfig() {
 
         PipelineManagerMock::GetInstance()->UpdatePipelines(diff.first);
         auto allConfigNames = PipelineManagerMock::GetInstance()->GetAllConfigNames();
+        sort(allConfigNames.begin(), allConfigNames.end());
         APSARA_TEST_EQUAL_FATAL(1U + builtinPipelineCnt, allConfigNames.size());
-        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[0]);
+        APSARA_TEST_EQUAL_FATAL("test1", allConfigNames[builtinPipelineCnt]);
         ClearConfig();
     }
     {

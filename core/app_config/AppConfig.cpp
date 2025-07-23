@@ -128,6 +128,11 @@ DEFINE_FLAG_STRING(metrics_report_method,
 DEFINE_FLAG_STRING(operator_service, "loong collector operator service", "");
 DEFINE_FLAG_INT32(operator_service_port, "loong collector operator service port", 8888);
 DEFINE_FLAG_INT32(k8s_meta_service_port, "loong collector operator service port", 9000);
+
+DEFINE_FLAG_STRING(k8s_metadata_server_name,
+                   "loong collector singleton service for k8s metadata server",
+                   "loongcollector-singleton");
+DEFINE_FLAG_INT32(k8s_metadata_server_port, "loong collector singleton service port for k8s metadata server", 8899);
 DEFINE_FLAG_STRING(_pod_name_, "agent pod name", "");
 
 DEFINE_FLAG_STRING(app_info_file, "", "app_info.json");
@@ -156,7 +161,7 @@ DEFINE_FLAG_STRING(sls_observer_ebpf_host_path,
                    "/etc/ilogtail/ebpf/");
 
 namespace logtail {
-constexpr int32_t kDefaultMaxSendBytePerSec = 25 * 1024 * 1024; // the max send speed per sec, realtime thread
+const int32_t kDefaultMaxSendBytePerSec = 25 * 1024 * 1024; // the max send speed per sec, realtime thread
 
 
 // 全局并发度保留余量百分比
@@ -184,8 +189,8 @@ std::string GetLoongcollectorEnv(const std::string& flagName) {
 void CreateAgentDir() {
     try {
         const char* value = getenv("LOGTAIL_MODE");
-        if (value != NULL) {
-            STRING_FLAG(logtail_mode) = StringTo<bool>(value);
+        if (value != nullptr) {
+            STRING_FLAG(logtail_mode) = value;
         }
     } catch (const exception& e) {
         std::cout << "load config from env error, env_name:LOGTAIL_MODE, error:" << e.what() << std::endl;
@@ -199,8 +204,8 @@ void CreateAgentDir() {
     try { \
         const auto env_name = GetLoongcollectorEnv(#flag_name); \
         const char* value = getenv(env_name.c_str()); \
-        if (value != NULL) { \
-            STRING_FLAG(flag_name) = StringTo<string>(value); \
+        if (value != nullptr) { \
+            STRING_FLAG(flag_name) = value; \
         } \
     } catch (const exception& e) { \
         std::cout << "load config from env error, env_name:" << #flag_name << "\terror:" << e.what() << std::endl; \
@@ -800,8 +805,8 @@ bool LoadSingleValueEnvConfig(const char* envKey, T& configValue, const T minVal
         char* value = NULL;
         value = getenv(envKey);
         if (value != NULL) {
-            T val = StringTo<T>(value);
-            if (val >= minValue) {
+            T val{};
+            if (StringTo(value, val) && val >= minValue) {
                 configValue = val;
                 LOG_INFO(sLogger, (string("set ") + envKey + " from env, value", value));
                 return true;
@@ -815,8 +820,8 @@ bool LoadSingleValueEnvConfig(const char* envKey, T& configValue, const T minVal
         const auto newEnvKey = LOONGCOLLECTOR_ENV_PREFIX + ToUpperCaseString(envKey);
         value = getenv(newEnvKey.c_str());
         if (value != NULL) {
-            T val = StringTo<T>(value);
-            if (val >= minValue) {
+            T val{};
+            if (StringTo(value, val) && val >= minValue) {
                 configValue = val;
                 LOG_INFO(sLogger, (string("set ") + envKey + " from env, value", value));
                 return true;
@@ -1642,7 +1647,7 @@ bool AppConfig::IsInInotifyBlackList(const std::string& path) const {
 // try { boost::filesystem::directory_iterator(path); } catch (...) { // failed } // OK
 void AppConfig::SetLoongcollectorConfDir(const std::string& dirPath) {
     mLoongcollectorConfDir = dirPath;
-    if (dirPath.back() != '/' || dirPath.back() != '\\') {
+    if (dirPath.back() != '/' && dirPath.back() != '\\') {
         mLoongcollectorConfDir += PATH_SEPARATOR;
     }
 
@@ -1800,6 +1805,79 @@ void AppConfig::RegisterCallback(const std::string& key, std::function<bool()>* 
 }
 
 template <typename T>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const T&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              T& res,
+              std::string& configName);
+
+template <>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const int32_t&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              int32_t& res,
+              std::string& configName) {
+    if (config[name].isInt() && validateFn(name, config[name].asInt())) {
+        res = config[name].asInt();
+        configName = keyToConfigName[name];
+    }
+}
+
+template <>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const int64_t&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              int64_t& res,
+              std::string& configName) {
+    if (config[name].isInt64() && validateFn(name, config[name].asInt64())) {
+        res = config[name].asInt64();
+        configName = keyToConfigName[name];
+    }
+}
+
+template <>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const bool&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              bool& res,
+              std::string& configName) {
+    if (config[name].isBool() && validateFn(name, config[name].asBool())) {
+        res = config[name].asBool();
+        configName = keyToConfigName[name];
+    }
+}
+
+template <>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const std::string&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              std::string& res,
+              std::string& configName) {
+    if (config[name].isString() && validateFn(name, config[name].asString())) {
+        res = config[name].asString();
+        configName = keyToConfigName[name];
+    }
+}
+
+template <>
+void tryMerge(const std::string& name,
+              const std::function<bool(const std::string&, const double&)>& validateFn,
+              const Json::Value& config,
+              std::unordered_map<std::string, std::string>& keyToConfigName,
+              double& res,
+              std::string& configName) {
+    if (config[name].isDouble() && validateFn(name, config[name].asDouble())) {
+        res = config[name].asDouble();
+        configName = keyToConfigName[name];
+    }
+}
+
+template <typename T>
 T AppConfig::MergeConfig(const T& defaultValue,
                          const T& currentValue,
                          const std::string& name,
@@ -1811,40 +1889,10 @@ T AppConfig::MergeConfig(const T& defaultValue,
     T res = defaultValue;
     std::string configName = "default";
 
-    auto tryMerge = [&](const Json::Value& config, std::unordered_map<std::string, std::string>& keyToConfigName) {
-        if (config.isMember(name)) {
-            if constexpr (std::is_same_v<T, int32_t>) {
-                if (config[name].isInt() && validateFn(name, config[name].asInt())) {
-                    res = config[name].asInt();
-                    configName = keyToConfigName[name];
-                }
-            } else if constexpr (std::is_same_v<T, int64_t>) {
-                if (config[name].isInt64() && validateFn(name, config[name].asInt64())) {
-                    res = config[name].asInt64();
-                    configName = keyToConfigName[name];
-                }
-            } else if constexpr (std::is_same_v<T, bool>) {
-                if (config[name].isBool() && validateFn(name, config[name].asBool())) {
-                    res = config[name].asBool();
-                    configName = keyToConfigName[name];
-                }
-            } else if constexpr (std::is_same_v<T, std::string>) {
-                if (config[name].isString() && validateFn(name, config[name].asString())) {
-                    res = config[name].asString();
-                    configName = keyToConfigName[name];
-                }
-            } else if constexpr (std::is_same_v<T, double>) {
-                if (config[name].isDouble() && validateFn(name, config[name].asDouble())) {
-                    res = config[name].asDouble();
-                    configName = keyToConfigName[name];
-                }
-            }
-        }
-    };
+    tryMerge(name, validateFn, localInstanceConfig, mLocalInstanceConfigKeyToConfigName, res, configName);
+    tryMerge(name, validateFn, envConfig, mEnvConfigKeyToConfigName, res, configName);
+    tryMerge(name, validateFn, remoteInstanceConfig, mRemoteInstanceConfigKeyToConfigName, res, configName);
 
-    tryMerge(localInstanceConfig, mLocalInstanceConfigKeyToConfigName);
-    tryMerge(envConfig, mEnvConfigKeyToConfigName);
-    tryMerge(remoteInstanceConfig, mRemoteInstanceConfigKeyToConfigName);
     LOG_INFO(
         sLogger,
         ("merge instance config", name)("key", name)("newValue", res)("lastValue", currentValue)("from", configName));

@@ -2,10 +2,10 @@ package kubernetesmetav2
 
 import (
 	"github.com/alibaba/ilogtail/pkg/flags"
-	"github.com/alibaba/ilogtail/pkg/helper"
 	"github.com/alibaba/ilogtail/pkg/helper/k8smeta"
 	"github.com/alibaba/ilogtail/pkg/models"
 	"github.com/alibaba/ilogtail/pkg/pipeline"
+	"github.com/alibaba/ilogtail/pkg/selfmonitor"
 )
 
 type ProcessFunc func(data *k8smeta.ObjectWrapper, method string) []models.PipelineEvent
@@ -60,6 +60,12 @@ type ServiceK8sMeta struct {
 	Namespace2StorageClass          string
 	Namespace2Ingress               string
 
+	// restrict cluster link dest target
+	Cluster2Node             string
+	Cluster2Namespace        string
+	Cluster2PersistentVolume string
+	Cluster2StorageClass     string
+
 	// other
 	context       pipeline.Context
 	metaManager   *k8smeta.MetaManager
@@ -67,10 +73,13 @@ type ServiceK8sMeta struct {
 	metaCollector *metaCollector
 	configName    string
 	clusterID     string
+	clusterName   string
+	clusterRegion string
 	domain        string
+
 	// self metric
-	entityCount pipeline.CounterMetric
-	linkCount   pipeline.CounterMetric
+	entityCount selfmonitor.CounterMetric
+	linkCount   selfmonitor.CounterMetric
 }
 
 // Init called for init some system resources, like socket, mutex...
@@ -82,8 +91,8 @@ func (s *ServiceK8sMeta) Init(context pipeline.Context) (int, error) {
 	s.initDomain()
 
 	metricRecord := s.context.GetMetricRecord()
-	s.entityCount = helper.NewCounterMetricAndRegister(metricRecord, helper.MetricCollectEntityTotal)
-	s.linkCount = helper.NewCounterMetricAndRegister(metricRecord, helper.MetricCollectLinkTotal)
+	s.entityCount = selfmonitor.NewCounterMetricAndRegister(metricRecord, selfmonitor.MetricCollectEntityTotal)
+	s.linkCount = selfmonitor.NewCounterMetricAndRegister(metricRecord, selfmonitor.MetricCollectLinkTotal)
 	return 0, nil
 }
 
@@ -111,19 +120,22 @@ func (s *ServiceK8sMeta) Start(collector pipeline.Collector) error {
 }
 
 func (s *ServiceK8sMeta) initDomain() {
-	switch *flags.ClusterType {
-	case ackCluster, oneCluster, asiCluster:
-		s.domain = acsDomain
-	default:
-		s.domain = infraDomain
+
+	if flags.ClusterType != nil && *flags.ClusterType != "" {
+		s.domain = *flags.ClusterType
+	} else {
+		s.domain = k8sDomain
 	}
+
 }
 
 func init() {
 	pipeline.ServiceInputs["service_kubernetes_meta"] = func() pipeline.ServiceInput {
 		return &ServiceK8sMeta{
-			Interval:  60,
-			clusterID: *flags.ClusterID,
+			Interval:      60,
+			clusterID:     *flags.ClusterID,
+			clusterName:   *flags.ClusterName,
+			clusterRegion: *flags.ClusterRegion,
 		}
 	}
 }

@@ -18,6 +18,7 @@
 
 #include <functional>
 #include <map>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -546,6 +547,7 @@ public:
     friend class PipelineUpdateUnittest;
     friend class ProcessorTagNativeUnittest;
     friend class EnterpriseConfigProviderUnittest;
+    friend class PollingPreservedDirDepthUnittest;
 #endif
 };
 
