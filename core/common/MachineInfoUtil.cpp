@@ -45,6 +45,7 @@
 #elif defined(_MSC_VER)
 #include <WinSock2.h>
 #include <Windows.h>
+#include <ws2tcpip.h>
 #endif
 
 DEFINE_FLAG_STRING(agent_host_id, "", "");
@@ -182,6 +183,7 @@ std::string GetHostName() {
     return std::string(hostname);
 }
 
+#if defined(__linux__)
 std::unordered_set<std::string> GetNicIpv4IPSet() {
     struct ifaddrs* ifAddrStruct = NULL;
     void* tmpAddrPtr = NULL;
@@ -207,6 +209,7 @@ std::unordered_set<std::string> GetNicIpv4IPSet() {
     freeifaddrs(ifAddrStruct);
     return ipSet;
 }
+#endif
 
 std::string GetHostIpByHostName() {
     std::string hostname = GetHostName();
@@ -452,7 +455,7 @@ bool GetRedHatReleaseInfo(std::string& os, int64_t& osVersion, std::string bashP
     bashPath.append("/etc/redhat-release");
     os.clear();
     std::string content, exception;
-    if (!ReadFileContent(bashPath, content)) {
+    if (FileReadResult::kOK != ReadFileContent(bashPath, content)) {
         return false;
     }
     boost::match_results<const char*> what;
@@ -479,8 +482,9 @@ bool IsDigitsDotsHostname(const char* hostname) {
         int16_t digits = 32;
         while (*cp != '\0' && digits > 0) {
             char* endp;
-            uint64_t sum = strtoul(cp, &endp, 0);
-            if ((sum == ULONG_MAX && errno == ERANGE) || sum >= (1UL << digits)) {
+            // unsiged long 32 bit in windows, 64bit in linux.
+            uint64_t sum = strtoull(cp, &endp, 0);
+            if ((sum == ULONG_MAX && errno == ERANGE) || sum >= (1ULL << digits)) {
                 break;
             }
             cp = endp;
@@ -572,7 +576,7 @@ bool InstanceIdentity::InitFromFile() {
     ECSMeta meta;
     if (CheckExistance(mInstanceIdentityFile)) {
         std::string instanceIdentityStr;
-        if (ReadFileContent(mInstanceIdentityFile, instanceIdentityStr)) {
+        if (FileReadResult::kOK != ReadFileContent(mInstanceIdentityFile, instanceIdentityStr)) {
             Json::Value doc;
             std::string errMsg;
             if (!ParseJsonTable(instanceIdentityStr, doc, errMsg)) {
@@ -768,7 +772,7 @@ void InstanceIdentity::getSerialNumberFromEcsAssist() {
         return;
     }
     if (CheckExistance(mEcsAssistMachineIdFile)) {
-        if (!ReadFileContent(mEcsAssistMachineIdFile, mSerialNumber)) {
+        if (FileReadResult::kOK != ReadFileContent(mEcsAssistMachineIdFile, mSerialNumber)) {
             mSerialNumber = "";
         }
     }

@@ -31,6 +31,7 @@
 #include "common/MachineInfoUtil.h"
 #include "common/RuntimeUtil.h"
 #include "common/StringTools.h"
+#include "common/TimeKeeper.h"
 #include "common/TimeUtil.h"
 #include "common/UUIDUtil.h"
 #include "common/version.h"
@@ -58,6 +59,8 @@
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "common/LinuxDaemonUtil.h"
 #include "shennong/ShennongManager.h"
+#elif defined(_MSC_VER)
+#include "common/WindowsDaemonUtil.h"
 #endif
 #else
 #include "provider/Provider.h"
@@ -81,6 +84,7 @@ Application::Application() : mStartTime(time(nullptr)) {
 }
 
 void Application::Init() {
+    TimeKeeper::GetInstance();
     // change working dir to ./${ILOGTAIL_VERSION}/
     string processExecutionDir = GetProcessExecutionDir();
     AppConfig::GetInstance()->SetProcessExecutionDir(processExecutionDir);
@@ -115,9 +119,11 @@ void Application::Init() {
     LoongCollectorMonitor::GetInstance();
 #ifdef __ENTERPRISE__
     EnterpriseConfigProvider::GetInstance()->Init("enterprise");
+#if defined(__linux__)
     if (GlobalConf::Instance()->mStartWorkerStatus == "Crash") {
         AlarmManager::GetInstance()->SendAlarm(LOGTAIL_CRASH_ALARM, "Logtail Restart");
     }
+#endif
     // get last crash info
     string backTraceStr = GetCrashBackTrace();
     if (!backTraceStr.empty()) {
@@ -267,9 +273,6 @@ void Application::Start() { // GCOVR_EXCL_START
     }
 
     time_t curTime = 0, lastConfigCheckTime = 0, lastUpdateMetricTime = 0, lastCheckTagsTime = 0, lastQueueGCTime = 0;
-#ifndef LOGTAIL_NO_TC_MALLOC
-    time_t lastTcmallocReleaseMemTime = 0;
-#endif
     while (true) {
         curTime = time(NULL);
         if (curTime - lastCheckTagsTime >= INT32_FLAG(file_tags_update_interval)) {
@@ -291,9 +294,9 @@ void Application::Start() { // GCOVR_EXCL_START
             lastConfigCheckTime = curTime;
         }
 #ifndef LOGTAIL_NO_TC_MALLOC
-        if (curTime - lastTcmallocReleaseMemTime >= INT32_FLAG(tcmalloc_release_memory_interval)) {
+        if (curTime - gLastTcmallocReleaseMemTime >= INT32_FLAG(tcmalloc_release_memory_interval)) {
             MallocExtension::instance()->ReleaseFreeMemory();
-            lastTcmallocReleaseMemTime = curTime;
+            gLastTcmallocReleaseMemTime = curTime;
         }
 #endif
         if (curTime - lastQueueGCTime >= INT32_FLAG(queue_check_gc_interval_sec)) {
@@ -378,8 +381,8 @@ void Application::Exit() {
     FlusherSLS::RecycleResourceIfNotUsed();
 
     CollectionPipelineManager::GetInstance()->ClearAllPipelines();
-
-#if defined(_MSC_VER)
+    TimeKeeper::GetInstance()->Stop();
+#if defined(__ENTERPRISE__) && defined(_MSC_VER)
     ReleaseWindowsSignalObject();
 #endif
     LOG_INFO(sLogger, ("exit", "bye!"));

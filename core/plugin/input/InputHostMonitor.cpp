@@ -20,16 +20,18 @@
 #include "common/ParamExtractor.h"
 #include "host_monitor/HostMonitorInputRunner.h"
 #include "host_monitor/collector/CPUCollector.h"
+#include "host_monitor/collector/MemCollector.h"
+#include "host_monitor/collector/SystemCollector.h"
 
 namespace logtail {
 
 const std::string InputHostMonitor::sName = "input_host_monitor";
-const uint32_t kMinInterval = 5; // seconds
-const uint32_t kDefaultInterval = 15; // seconds
+constexpr uint32_t kHostMonitorMinInterval = 5; // seconds
+constexpr uint32_t kHostMonitorDefaultInterval = 15; // seconds
 
 bool InputHostMonitor::Init(const Json::Value& config, Json::Value& optionalGoPipeline) {
     std::string errorMsg;
-    mInterval = kDefaultInterval;
+    mInterval = kHostMonitorDefaultInterval;
     if (!GetOptionalUIntParam(config, "Interval", mInterval, errorMsg)) {
         PARAM_WARNING_DEFAULT(mContext->GetLogger(),
                               mContext->GetAlarm(),
@@ -41,17 +43,17 @@ bool InputHostMonitor::Init(const Json::Value& config, Json::Value& optionalGoPi
                               mContext->GetLogstoreName(),
                               mContext->GetRegion());
     }
-    if (mInterval < kMinInterval) {
+    if (mInterval < kHostMonitorMinInterval) {
         PARAM_WARNING_DEFAULT(mContext->GetLogger(),
                               mContext->GetAlarm(),
-                              "uint param Interval is smaller than" + ToString(kMinInterval),
+                              "uint param Interval is smaller than" + ToString(kHostMonitorMinInterval),
                               mInterval,
                               sName,
                               mContext->GetConfigName(),
                               mContext->GetProjectName(),
                               mContext->GetLogstoreName(),
                               mContext->GetRegion());
-        mInterval = kMinInterval;
+        mInterval = kHostMonitorMinInterval;
     }
 
     // TODO: add more collectors
@@ -70,13 +72,48 @@ bool InputHostMonitor::Init(const Json::Value& config, Json::Value& optionalGoPi
     if (enableCPU) {
         mCollectors.push_back(CPUCollector::sName);
     }
+
+    // system load
+    bool enableSystem = true;
+    if (!GetOptionalBoolParam(config, "EnableSystem", enableSystem, errorMsg)) {
+        PARAM_ERROR_RETURN(mContext->GetLogger(),
+                           mContext->GetAlarm(),
+                           errorMsg,
+                           sName,
+                           mContext->GetConfigName(),
+                           mContext->GetProjectName(),
+                           mContext->GetLogstoreName(),
+                           mContext->GetRegion());
+    }
+
+    if (enableSystem) {
+        mCollectors.push_back(SystemCollector::sName);
+    }
+
+    // meminfo
+    bool enableMem = true;
+    if (!GetOptionalBoolParam(config, "EnableMemory", enableMem, errorMsg)) {
+        PARAM_ERROR_RETURN(mContext->GetLogger(),
+                           mContext->GetAlarm(),
+                           errorMsg,
+                           sName,
+                           mContext->GetConfigName(),
+                           mContext->GetProjectName(),
+                           mContext->GetLogstoreName(),
+                           mContext->GetRegion());
+    }
+
+    if (enableMem) {
+        mCollectors.push_back(MemCollector::sName);
+    }
+
     return true;
 }
 
 bool InputHostMonitor::Start() {
     HostMonitorInputRunner::GetInstance()->Init();
     HostMonitorInputRunner::GetInstance()->UpdateCollector(
-        mCollectors, {mInterval}, mContext->GetProcessQueueKey(), mIndex);
+        mCollectors, std::vector(mCollectors.size(), mInterval), mContext->GetProcessQueueKey(), mIndex);
     return true;
 }
 

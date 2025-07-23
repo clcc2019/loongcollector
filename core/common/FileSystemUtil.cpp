@@ -14,11 +14,16 @@
 
 #include "FileSystemUtil.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <sys/types.h>
+
 #if defined(_MSC_VER)
 #include <direct.h>
 #include <fcntl.h>
 #elif defined(__linux__)
 #include <fnmatch.h>
+#include <sys/statvfs.h>
 #endif
 #include <fstream>
 
@@ -122,24 +127,46 @@ void TrimLastSeperator(std::string& path) {
     }
 }
 
-bool ReadFileContent(const std::string& fileName, std::string& content, uint32_t maxFileSize) {
-    FILE* pFile = fopen(fileName.c_str(), "r");
-    if (pFile == NULL) {
-        APSARA_LOG_DEBUG(sLogger, ("open file fail", fileName)("errno", strerror(errno)));
-        return false;
+FileReadResult ReadFileContent(const std::string& fileName, std::string& content, uint64_t maxFileSize) {
+    std::ifstream ifs(fileName, std::ios::binary);
+    if (!ifs) {
+        return FileReadResult::kError;
     }
 
     content.clear();
-    char* buffer = new char[maxFileSize];
-    uint32_t readBytes = fread(buffer, 1, maxFileSize, pFile);
-    if (readBytes > 0) {
-        content.append(buffer, readBytes);
-        delete[] buffer;
-    } else
-        delete[] buffer;
+    try {
+        constexpr uint64_t kFileReadBufferSize = 32 * 1024;
+        // 设定为32K，对于特殊文件（如 /proc 中的文件）
+        // 尽可能一次性读进来 https://github.com/giampaolo/psutil/issues/2050
+        uint64_t totalRead = 0;
+        uint64_t bytesRead = 0;
+        content.resize(std::min(kFileReadBufferSize, maxFileSize));
 
-    fclose(pFile);
-    return true;
+        while (ifs && totalRead < maxFileSize) {
+            ifs.read(content.data() + totalRead, std::min(kFileReadBufferSize, maxFileSize - totalRead));
+            bytesRead = ifs.gcount();
+            totalRead += bytesRead;
+
+            if (bytesRead > 0 && totalRead < maxFileSize) {
+                content.resize(totalRead + kFileReadBufferSize);
+            }
+        }
+
+        content.resize(totalRead);
+
+        // Check if file is larger than maxFileSize
+        char extra = 0;
+        if (ifs.read(&extra, 1)) {
+            return FileReadResult::kTruncated;
+        }
+    } catch (const std::ios_base::failure& e) {
+        return FileReadResult::kError;
+    } catch (const std::filesystem::filesystem_error& e) {
+        // Handle filesystem errors (e.g., permissions)
+        return FileReadResult::kError;
+    }
+
+    return FileReadResult::kOK;
 }
 
 int GetLines(std::istream& is,

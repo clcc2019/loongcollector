@@ -19,8 +19,8 @@
 #include <unordered_set>
 #include <vector>
 
+#include "common/StringView.h"
 #include "models/PipelineEventGroup.h"
-#include "models/StringView.h"
 
 namespace logtail {
 
@@ -35,7 +35,13 @@ struct BatchedEvents {
 
     BatchedEvents() = default;
     ~BatchedEvents();
-    BatchedEvents(BatchedEvents&&) noexcept = default;
+    BatchedEvents(BatchedEvents&& other) noexcept
+        : mEvents(std::move(other.mEvents)),
+          mTags(std::move(other.mTags)),
+          mSourceBuffers(std::move(other.mSourceBuffers)),
+          mSizeBytes(other.mSizeBytes),
+          mExactlyOnceCheckpoint(std::move(other.mExactlyOnceCheckpoint)),
+          mPackIdPrefix(other.mPackIdPrefix) {}
     BatchedEvents& operator=(BatchedEvents&&) noexcept = default;
 
     // for flusher_sls only

@@ -105,17 +105,11 @@ ParseConfResult ParseConfig(const std::string& configName, Json::Value& jsonRoot
         fullPath = GetProcessExecutionDir() + configName;
     }
 
-    ifstream is;
-    is.open(fullPath.c_str());
-    if (!is) { // https://horstmann.com/cpp/pitfalls.html
-        return CONFIG_NOT_EXIST;
-    }
     std::string buffer;
-    try {
-        buffer.assign(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>());
-    } catch (const std::ios_base::failure& e) {
+    if (FileReadResult::kOK != ReadFileContent(fullPath, buffer)) {
         return CONFIG_NOT_EXIST;
     }
+
     if (!IsValidJson(buffer.c_str(), buffer.length())) {
         return CONFIG_INVALID_FORMAT;
     }
@@ -142,14 +136,17 @@ bool ConfigManager::RegisterHandlersRecursively(const std::string& path,
         return false;
     }
     bool result = false;
-    if (checkTimeout && config.first->IsTimeout(path))
+    if (checkTimeout && config.first->IsTimeout(path)) {
         return result;
+    }
 
-    if (!config.first->IsDirectoryInBlacklist(path))
+    if (!config.first->IsDirectoryInBlacklist(path)) {
         result = EventDispatcher::GetInstance()->RegisterEventHandler(path, config, mSharedHandler);
+    }
 
-    if (!result)
+    if (!result) {
         return result;
+    }
 
     fsutil::Dir dir(path);
     if (!dir.Open()) {
@@ -1026,7 +1023,7 @@ void ConfigManager::GetContainerStoppedEvents(std::vector<Event*>& eventVec) {
         LOG_DEBUG(
             sLogger,
             ("GetContainerStoppedEvent Type", pStoppedEvent->GetType())("Source", pStoppedEvent->GetSource())(
-                "Object", pStoppedEvent->GetObject())("Config", pStoppedEvent->GetConfigName())(
+                "Object", pStoppedEvent->GetEventObject())("Config", pStoppedEvent->GetConfigName())(
                 "IsDir", pStoppedEvent->IsDir())("IsCreate", pStoppedEvent->IsCreate())("IsModify",
                                                                                         pStoppedEvent->IsModify())(
                 "IsDeleted", pStoppedEvent->IsDeleted())("IsMoveFrom", pStoppedEvent->IsMoveFrom())(
@@ -1102,7 +1099,7 @@ void ConfigManager::LoadDockerConfig() {
         // cmd 解析json
         Json::Value jsonParams;
         std::string errorMsg;
-        if (params.size() < 5UL || !ParseJsonTable(params, jsonParams, errorMsg)) {
+        if (params.size() < (size_t)5 || !ParseJsonTable(params, jsonParams, errorMsg)) {
             LOG_ERROR(sLogger, ("invalid docker container params", params)("errorMsg", errorMsg));
             continue;
         }

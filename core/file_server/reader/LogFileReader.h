@@ -31,6 +31,7 @@
 #include "common/FileInfo.h"
 #include "common/LogFileOperator.h"
 #include "common/StringTools.h"
+#include "common/StringView.h"
 #include "common/TimeUtil.h"
 #include "common/memory/SourceBuffer.h"
 #include "constants/TagConstants.h"
@@ -40,7 +41,6 @@
 #include "file_server/event/Event.h"
 #include "file_server/reader/FileReaderOptions.h"
 #include "logger/Logger.h"
-#include "models/StringView.h"
 #include "protobuf/sls/sls_logs.pb.h"
 
 namespace logtail {
@@ -391,6 +391,13 @@ public:
 
     void SetContainerMetadatas(const std::vector<std::pair<TagKey, std::string>>& tags) { mContainerMetadatas = tags; }
 
+    const std::vector<std::pair<std::string, std::string>>& GetContainerCustomMetadatas() {
+        return mContainerCustomMetadatas;
+    }
+    void SetContainerCustomMetadatas(const std::vector<std::pair<std::string, std::string>>& tags) {
+        mContainerCustomMetadatas = tags;
+    }
+
     const std::vector<std::pair<std::string, std::string>>& GetExtraTags() { return mContainerExtraTags; }
 
     void SetContainerExtraTags(const std::vector<std::pair<std::string, std::string>>& tags) {
@@ -530,6 +537,7 @@ protected:
     // tags
     std::vector<std::pair<std::string, std::string>> mTopicExtraTags;
     std::vector<std::pair<TagKey, std::string>> mContainerMetadatas;
+    std::vector<std::pair<std::string, std::string>> mContainerCustomMetadatas;
     std::vector<std::pair<std::string, std::string>> mContainerExtraTags;
     // int32_t mCloseUnusedInterval;
 
@@ -560,7 +568,6 @@ protected:
 
 private:
     bool mHasReadContainerBom = false;
-    void checkContainerType();
     void checkContainerType(LogFileOperator& op);
 
     // Initialized when the exactly once feature is enabled.
@@ -707,6 +714,8 @@ private:
     friend class LastMatchedContainerdTextWithDockerJsonUnittest;
     friend class ForceReadUnittest;
     friend class FileTagUnittest;
+    friend class CreateModifyHandlerUnittest;
+    friend class LogFileReaderHoleUnittest;
 
 protected:
     void UpdateReaderManual();
